@@ -95,11 +95,14 @@ func (s *Server) registerTools() error {
 	s.registerCredentialsTools()
 	s.registerArtifactsTools()
 
+	// Phase 3: Callbacks tools
+	s.registerCallbacksTools()
+
 	// Future phases will add more tool categories:
-	// - Callback tools (Phase 3)
 	// - Task tools (Phase 3)
 	// - Payload tools (Phase 3)
 	// - C2 Profiles tools (Phase 3)
+	// - Commands tools (Phase 3)
 	// - MITRE ATT&CK tools (Phase 4)
 	// - etc.
 
