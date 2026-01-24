@@ -84,28 +84,16 @@ func (s *Server) Close() error {
 
 // registerTools registers all MCP tools
 func (s *Server) registerTools() error {
-	// Phase 1: Authentication tools (to be implemented)
+	// Phase 1: Authentication tools
 	s.registerAuthTools()
 
 	// Future phases will add more tool categories:
-	// - Operations tools
-	// - Callback tools
-	// - Task tools
-	// - Payload tools
-	// - File tools
+	// - Operations tools (Phase 2)
+	// - Callback tools (Phase 3)
+	// - Task tools (Phase 3)
+	// - Payload tools (Phase 3)
+	// - File tools (Phase 2)
 	// - etc.
 
 	return nil
-}
-
-// registerAuthTools registers authentication-related tools
-func (s *Server) registerAuthTools() {
-	// Tool registration will be implemented in Phase 1
-	// For now, this is a placeholder to establish the pattern
-
-	// Example structure for future implementation:
-	// s.mcpServer.AddTool("mythic_login", mcp.Tool{
-	//     Description: "Authenticate with Mythic server",
-	//     InputSchema: mcp.ToolInputSchema{...},
-	// }, s.handleLogin)
 }
