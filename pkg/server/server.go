@@ -87,18 +87,20 @@ func (s *Server) registerTools() error {
 	// Phase 1: Authentication tools
 	s.registerAuthTools()
 
-	// Phase 2: Operations, Files, Operators, Tags tools
+	// Phase 2: Operations, Files, Operators, Tags, Credentials, Artifacts tools
 	s.registerOperationsTools()
 	s.registerFilesTools()
 	s.registerOperatorsTools()
 	s.registerTagsTools()
+	s.registerCredentialsTools()
+	s.registerArtifactsTools()
 
 	// Future phases will add more tool categories:
 	// - Callback tools (Phase 3)
 	// - Task tools (Phase 3)
 	// - Payload tools (Phase 3)
-	// - Credentials tools (Phase 2)
-	// - Artifacts tools (Phase 2)
+	// - C2 Profiles tools (Phase 3)
+	// - MITRE ATT&CK tools (Phase 4)
 	// - etc.
 
 	return nil
