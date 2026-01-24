@@ -1,0 +1,31 @@
+{
+  "plugins": {
+    "ci-first-dev": {
+      "version": "0.1.0",
+      "marketplace": "claude-lab",
+      "installedAt": "/root/.claude/plugins/marketplaces/claude-lab/plugins/ci-first-dev",
+      "installedOn": "2026-01-24T12:47:12.211176",
+      "files": {
+        "commands": [],
+        "agents": [
+          "agents/ci-architect.md"
+        ],
+        "skills": [
+          "skills/ci-first-philosophy/SKILL.md",
+          "skills/github-actions-setup/SKILL.md",
+          "skills/integration-test-planning/SKILL.md"
+        ],
+        "support": [
+          "plugins/ci-first-dev/README.md",
+          "plugins/ci-first-dev/CONTRIBUTING.md",
+          "plugins/ci-first-dev/.gitignore",
+          "plugins/ci-first-dev/CHANGELOG.md",
+          "plugins/ci-first-dev/.github/ISSUE_TEMPLATE.md",
+          "plugins/ci-first-dev/LICENSE"
+        ]
+      },
+      "mcpServers": [],
+      "hooks": {}
+    }
+  }
+}

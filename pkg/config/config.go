@@ -1,0 +1,86 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"time"
+)
+
+// Config holds the MCP server configuration
+type Config struct {
+	// Mythic connection settings
+	MythicURL      string
+	APIToken       string
+	Username       string
+	Password       string
+	SSL            bool
+	SkipTLSVerify  bool
+
+	// Server settings
+	LogLevel       string
+	Timeout        time.Duration
+}
+
+// LoadFromEnv loads configuration from environment variables
+func LoadFromEnv() (*Config, error) {
+	cfg := &Config{
+		MythicURL:     os.Getenv("MYTHIC_URL"),
+		APIToken:      os.Getenv("MYTHIC_API_TOKEN"),
+		Username:      os.Getenv("MYTHIC_USERNAME"),
+		Password:      os.Getenv("MYTHIC_PASSWORD"),
+		SSL:           getEnvBool("MYTHIC_SSL", true),
+		SkipTLSVerify: getEnvBool("MYTHIC_SKIP_TLS_VERIFY", false),
+		LogLevel:      getEnvString("LOG_LEVEL", "info"),
+		Timeout:       getEnvDuration("TIMEOUT", 30*time.Second),
+	}
+
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+// Validate checks that required configuration is present
+func (c *Config) Validate() error {
+	if c.MythicURL == "" {
+		return fmt.Errorf("MYTHIC_URL is required")
+	}
+
+	// Must have either API token or username/password
+	if c.APIToken == "" && (c.Username == "" || c.Password == "") {
+		return fmt.Errorf("either MYTHIC_API_TOKEN or MYTHIC_USERNAME/MYTHIC_PASSWORD must be set")
+	}
+
+	return nil
+}
+
+// getEnvString returns environment variable value or default
+func getEnvString(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// getEnvBool returns environment variable as bool or default
+func getEnvBool(key string, defaultValue bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value == "true" || value == "1" || value == "yes"
+}
+
+// getEnvDuration returns environment variable as duration or default
+func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	duration, err := time.ParseDuration(value)
+	if err != nil {
+		return defaultValue
+	}
+	return duration
+}

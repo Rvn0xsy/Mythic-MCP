@@ -1,0 +1,79 @@
+# Plugin-specific directories
+logs/
+temp/
+data/*.db
+*.log
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Virtual environments
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# MCP server specific
+mcp-servers/*.pid
+mcp-servers/*.sock
+
+# Secrets (NEVER commit these!)
+*.key
+*.pem
+*.p12
+secrets.json
+credentials.json
+.credentials
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Local configuration overrides
+config.local.json
+settings.local.json
