@@ -109,9 +109,10 @@ func (s *Server) registerTools() error {
 	s.registerAttackTools()
 	s.registerProcessesTools()
 	s.registerHostsTools()
+	s.registerScreenshotsTools()
 
 	// Future phases will add more tool categories:
-	// - Screenshots, Keylogs (Phase 4)
+	// - Keylogs (Phase 4)
 	// - Tokens, Browser Scripts, File Browser (Phase 4)
 	// - Eventing, Alerts, Containers, etc. (Phase 5)
 
