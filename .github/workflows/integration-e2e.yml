@@ -203,6 +203,7 @@ jobs:
           MYTHIC_USERNAME: "mythic_admin"
           MYTHIC_PASSWORD: ${{ steps.mythic-creds.outputs.password }}
           MYTHIC_SKIP_TLS_VERIFY: "true"
+          E2E_DEBUG: "1"
         run: |
           echo "::group::Running ${{ matrix.test-group }}"
           echo "Test Pattern: ${{ matrix.test-pattern }}"

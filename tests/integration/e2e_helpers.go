@@ -273,7 +273,7 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 		// Debug: Print response structure if E2E_DEBUG is set
 		if os.Getenv("E2E_DEBUG") == "1" {
 			debugData, _ := json.MarshalIndent(response, "", "  ")
-			fmt.Printf("DEBUG: MCP Response for %s:\n%s\n", toolName, string(debugData))
+			fmt.Printf("\n========== DEBUG: MCP Response for %s ==========\n%s\n", toolName, string(debugData))
 		}
 
 		// Check for error in response
@@ -329,7 +329,20 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 
 		// If normalized result is empty, return original result
 		if len(normalizedResult) == 0 {
+			if os.Getenv("E2E_DEBUG") == "1" {
+				fmt.Printf("DEBUG: Normalized result is empty, returning original result\n\n")
+			}
 			return result, nil
+		}
+
+		// Debug: Print normalized result
+		if os.Getenv("E2E_DEBUG") == "1" {
+			normalizedData, _ := json.MarshalIndent(normalizedResult, "", "  ")
+			fmt.Printf("DEBUG: Normalized result for %s:\n%s\n", toolName, string(normalizedData))
+			if content, ok := normalizedResult["content"]; ok {
+				fmt.Printf("DEBUG: content field type: %T\n", content)
+			}
+			fmt.Printf("=================================================\n\n")
 		}
 
 		return normalizedResult, nil
