@@ -112,17 +112,33 @@ jobs:
           attempt=0
 
           while [ $attempt -lt $timeout ]; do
-            # Check if http container is running
-            http_running=$(sudo docker ps --filter "name=mythic_http" --format "{{.Status}}" | grep -c "Up" || echo "0")
+            # Check if http container is running (container name is just "http", not "mythic_http")
+            http_status=$(sudo docker ps --filter "name=^http$" --format "{{.Status}}" 2>/dev/null || echo "")
+            if [[ "$http_status" =~ "Up" ]]; then
+              http_running=1
+            else
+              http_running=0
+            fi
 
-            # Check if poseidon container is running
-            poseidon_running=$(sudo docker ps --filter "name=mythic_poseidon" --format "{{.Status}}" | grep -c "Up" || echo "0")
+            # Check if poseidon container is running (container name is just "poseidon", not "mythic_poseidon")
+            poseidon_status=$(sudo docker ps --filter "name=^poseidon$" --format "{{.Status}}" 2>/dev/null || echo "")
+            if [[ "$poseidon_status" =~ "Up" ]]; then
+              poseidon_running=1
+            else
+              poseidon_running=0
+            fi
 
             if [ "$http_running" -eq "1" ] && [ "$poseidon_running" -eq "1" ]; then
               echo "✅ All containers ready after $attempt seconds"
               echo "HTTP C2 Profile: Running"
               echo "Poseidon Agent: Running"
-              sudo docker ps --filter "name=mythic_"
+              echo ""
+              echo "All Mythic containers:"
+              sudo docker ps --filter "name=mythic" --format "table {{.Names}}\t{{.Status}}"
+              echo ""
+              echo "Agent and C2 containers:"
+              sudo docker ps --filter "name=^http$" --format "table {{.Names}}\t{{.Status}}"
+              sudo docker ps --filter "name=^poseidon$" --format "table {{.Names}}\t{{.Status}}"
               break
             fi
 
@@ -133,6 +149,7 @@ jobs:
 
           if [ $attempt -ge $timeout ]; then
             echo "::error::❌ Containers did not start within timeout"
+            echo "Current container status:"
             sudo docker ps -a
             sudo ./mythic-cli status
             exit 1
@@ -258,8 +275,8 @@ jobs:
           sudo docker logs mythic_server > mythic-failure-logs/mythic-server.log 2>&1 || true
           sudo docker logs mythic_postgres > mythic-failure-logs/mythic-postgres.log 2>&1 || true
           sudo docker logs mythic_rabbitmq > mythic-failure-logs/mythic-rabbitmq.log 2>&1 || true
-          sudo docker logs mythic_http > mythic-failure-logs/mythic-http.log 2>&1 || true
-          sudo docker logs mythic_poseidon > mythic-failure-logs/mythic-poseidon.log 2>&1 || true
+          sudo docker logs http > mythic-failure-logs/http.log 2>&1 || true
+          sudo docker logs poseidon > mythic-failure-logs/poseidon.log 2>&1 || true
           sudo ./mythic-cli status > mythic-failure-logs/mythic-status.txt 2>&1 || true
           echo "::endgroup::"
 
