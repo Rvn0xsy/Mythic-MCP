@@ -275,7 +275,41 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 			return nil, fmt.Errorf("MCP error: %v", errObj)
 		}
 
-		return response, nil
+		// Extract result from JSON-RPC response
+		// MCP response structure: {"jsonrpc": "2.0", "id": 1, "result": {...}}
+		result, ok := response["result"].(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("invalid response: missing or invalid result field")
+		}
+
+		// Extract metadata if present (MCP SDK includes it as _meta)
+		var normalizedResult = make(map[string]interface{})
+
+		// Copy metadata if present
+		if meta, ok := result["_meta"]; ok {
+			normalizedResult["metadata"] = meta
+
+			// Also copy metadata fields as content for tests expecting arrays
+			// The _meta field contains the actual domain objects from our tool handlers
+			normalizedResult["content"] = meta
+		}
+
+		// Copy content field (MCP Content array)
+		if content, ok := result["content"]; ok {
+			normalizedResult["mcp_content"] = content
+
+			// If we don't have metadata yet, content might be what we want
+			if _, hasContent := normalizedResult["content"]; !hasContent {
+				normalizedResult["content"] = content
+			}
+		}
+
+		// Copy isError field
+		if isError, ok := result["isError"]; ok {
+			normalizedResult["isError"] = isError
+		}
+
+		return normalizedResult, nil
 	}
 }
 
