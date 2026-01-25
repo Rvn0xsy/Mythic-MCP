@@ -277,9 +277,17 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 
 		// Extract result from JSON-RPC response
 		// MCP response structure: {"jsonrpc": "2.0", "id": 1, "result": {...}}
-		result, ok := response["result"].(map[string]interface{})
+		resultField, hasResult := response["result"]
+		if !hasResult {
+			// No result field - return response as-is for compatibility
+			return response, nil
+		}
+
+		// Try to extract result as map
+		result, ok := resultField.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("invalid response: missing or invalid result field")
+			// Result is not a map - wrap it
+			return map[string]interface{}{"result": resultField}, nil
 		}
 
 		// Extract metadata if present (MCP SDK includes it as _meta)
@@ -307,6 +315,11 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 		// Copy isError field
 		if isError, ok := result["isError"]; ok {
 			normalizedResult["isError"] = isError
+		}
+
+		// If normalized result is empty, return original result
+		if len(normalizedResult) == 0 {
+			return result, nil
 		}
 
 		return normalizedResult, nil
