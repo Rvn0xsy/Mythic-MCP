@@ -320,7 +320,7 @@ func TestE2E_Tags_FullWorkflow(t *testing.T) {
 	// 6. Get current operation's tags
 	currentOp, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
-	if currentOp.CurrentOperation.ID != nil {
+	if currentOp.CurrentOperation != nil {
 		opTagsResult, err := setup.CallMCPTool("mythic_get_tags_by_operation", map[string]interface{}{
 			"operation_id": currentOp.CurrentOperation.ID,
 		})

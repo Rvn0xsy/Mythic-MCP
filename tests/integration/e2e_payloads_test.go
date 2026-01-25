@@ -72,7 +72,7 @@ func TestE2E_Payloads_CreatePayload(t *testing.T) {
 	}
 
 	// Get a callback to use as template (optional)
-	_, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
+	_, err = setup.MythicClient.GetAllCallbacks(setup.Ctx)
 	require.NoError(t, err)
 
 	// Create a basic payload

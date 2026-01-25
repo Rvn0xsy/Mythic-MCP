@@ -194,7 +194,7 @@ func TestE2E_Artifacts_GetByHost(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Should contain at least our artifact
-	_, ok := result["content"].([]interface{})
+	content, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 	require.NotEmpty(t, content, "Expected at least one artifact")
 

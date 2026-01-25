@@ -1,10 +1,8 @@
 package integration
 
 import (
-	"context"
 	"testing"
 
-	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic"
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
