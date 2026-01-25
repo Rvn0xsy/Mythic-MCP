@@ -109,7 +109,7 @@ type createPayloadArgs struct {
 }
 
 type updatePayloadArgs struct {
-	PayloadUUID   string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to update"`
+	PayloadUUID   string  `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to update"`
 	Description   *string `json:"description,omitempty" jsonschema:"description=Update payload description"`
 	CallbackAlert *bool   `json:"callback_alert,omitempty" jsonschema:"description=Update callback alert setting"`
 	Deleted       *bool   `json:"deleted,omitempty" jsonschema:"description=Mark payload as deleted"`
@@ -327,15 +327,15 @@ func (s *Server) handleDeletePayload(ctx context.Context, req *mcp.CallToolReque
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted payload %s", args.PayloadUUID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted payload %s", args.PayloadUUID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"payload_uuid": args.PayloadUUID,
-		"success":      true,
-	}, nil
+		}, map[string]interface{}{
+			"payload_uuid": args.PayloadUUID,
+			"success":      true,
+		}, nil
 }
 
 // handleRebuildPayload rebuilds a payload
@@ -368,17 +368,17 @@ func (s *Server) handleExportPayloadConfig(ctx context.Context, req *mcp.CallToo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully exported payload configuration\n\nConfig (length: %d bytes):\n%s",
-					len(config), config),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully exported payload configuration\n\nConfig (length: %d bytes):\n%s",
+						len(config), config),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"payload_uuid": args.PayloadUUID,
-		"config":       config,
-		"size":         len(config),
-	}, nil
+		}, map[string]interface{}{
+			"payload_uuid": args.PayloadUUID,
+			"config":       config,
+			"size":         len(config),
+		}, nil
 }
 
 // handleGetPayloadCommands retrieves commands for a payload
@@ -469,16 +469,16 @@ func (s *Server) handleDownloadPayload(ctx context.Context, req *mcp.CallToolReq
 	encodedData := base64.StdEncoding.EncodeToString(payloadData)
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully downloaded payload %s\nSize: %d bytes (raw), %d bytes (base64)",
-					args.PayloadUUID, len(payloadData), len(encodedData)),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully downloaded payload %s\nSize: %d bytes (raw), %d bytes (base64)",
+						args.PayloadUUID, len(payloadData), len(encodedData)),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"payload_uuid": args.PayloadUUID,
-		"payload_data": encodedData,
-		"size_raw":     len(payloadData),
-		"size_base64":  len(encodedData),
-	}, nil
+		}, map[string]interface{}{
+			"payload_uuid": args.PayloadUUID,
+			"payload_data": encodedData,
+			"size_raw":     len(payloadData),
+			"size_base64":  len(encodedData),
+		}, nil
 }

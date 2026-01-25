@@ -12,14 +12,14 @@ import (
 func TestLoadFromEnv(t *testing.T) {
 	// Save original environment
 	origEnv := map[string]string{
-		"MYTHIC_URL":            os.Getenv("MYTHIC_URL"),
-		"MYTHIC_API_TOKEN":      os.Getenv("MYTHIC_API_TOKEN"),
-		"MYTHIC_USERNAME":       os.Getenv("MYTHIC_USERNAME"),
-		"MYTHIC_PASSWORD":       os.Getenv("MYTHIC_PASSWORD"),
-		"MYTHIC_SSL":            os.Getenv("MYTHIC_SSL"),
+		"MYTHIC_URL":             os.Getenv("MYTHIC_URL"),
+		"MYTHIC_API_TOKEN":       os.Getenv("MYTHIC_API_TOKEN"),
+		"MYTHIC_USERNAME":        os.Getenv("MYTHIC_USERNAME"),
+		"MYTHIC_PASSWORD":        os.Getenv("MYTHIC_PASSWORD"),
+		"MYTHIC_SSL":             os.Getenv("MYTHIC_SSL"),
 		"MYTHIC_SKIP_TLS_VERIFY": os.Getenv("MYTHIC_SKIP_TLS_VERIFY"),
-		"LOG_LEVEL":             os.Getenv("LOG_LEVEL"),
-		"TIMEOUT":               os.Getenv("TIMEOUT"),
+		"LOG_LEVEL":              os.Getenv("LOG_LEVEL"),
+		"TIMEOUT":                os.Getenv("TIMEOUT"),
 	}
 
 	// Restore environment after test
@@ -45,9 +45,9 @@ func TestLoadFromEnv(t *testing.T) {
 		assert.Equal(t, "test-token", cfg.APIToken)
 		assert.Equal(t, "", cfg.Username)
 		assert.Equal(t, "", cfg.Password)
-		assert.True(t, cfg.SSL) // default
-		assert.False(t, cfg.SkipTLSVerify) // default
-		assert.Equal(t, "info", cfg.LogLevel) // default
+		assert.True(t, cfg.SSL)                      // default
+		assert.False(t, cfg.SkipTLSVerify)           // default
+		assert.Equal(t, "info", cfg.LogLevel)        // default
 		assert.Equal(t, 30*time.Second, cfg.Timeout) // default
 	})
 

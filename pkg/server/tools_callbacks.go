@@ -119,9 +119,9 @@ type getCallbackTokensArgs struct {
 }
 
 type addCallbackEdgeArgs struct {
-	SourceID       int    `json:"source_id" jsonschema:"required,description=Source callback ID"`
-	DestinationID  int    `json:"destination_id" jsonschema:"required,description=Destination callback ID"`
-	C2ProfileName  string `json:"c2_profile_name" jsonschema:"required,description=C2 profile name for the connection"`
+	SourceID      int    `json:"source_id" jsonschema:"required,description=Source callback ID"`
+	DestinationID int    `json:"destination_id" jsonschema:"required,description=Destination callback ID"`
+	C2ProfileName string `json:"c2_profile_name" jsonschema:"required,description=C2 profile name for the connection"`
 }
 
 type removeCallbackEdgeArgs struct {
@@ -217,15 +217,15 @@ func (s *Server) handleUpdateCallback(ctx context.Context, req *mcp.CallToolRequ
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully updated callback %d", args.CallbackID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully updated callback %d", args.CallbackID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"callback_id": args.CallbackID,
-		"success":     true,
-	}, nil
+		}, map[string]interface{}{
+			"callback_id": args.CallbackID,
+			"success":     true,
+		}, nil
 }
 
 // handleDeleteCallback deletes one or more callbacks
@@ -240,16 +240,16 @@ func (s *Server) handleDeleteCallback(ctx context.Context, req *mcp.CallToolRequ
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted %d callback(s)", len(args.CallbackIDs)),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted %d callback(s)", len(args.CallbackIDs)),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"callback_ids": args.CallbackIDs,
-		"count":        len(args.CallbackIDs),
-		"success":      true,
-	}, nil
+		}, map[string]interface{}{
+			"callback_ids": args.CallbackIDs,
+			"count":        len(args.CallbackIDs),
+			"success":      true,
+		}, nil
 }
 
 // handleGetLoadedCommands retrieves loaded commands for a callback
@@ -281,17 +281,17 @@ func (s *Server) handleExportCallbackConfig(ctx context.Context, req *mcp.CallTo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully exported callback configuration\n\nConfig (length: %d bytes):\n%s",
-					len(config), config),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully exported callback configuration\n\nConfig (length: %d bytes):\n%s",
+						len(config), config),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"agent_callback_id": args.AgentCallbackID,
-		"config":            config,
-		"size":              len(config),
-	}, nil
+		}, map[string]interface{}{
+			"agent_callback_id": args.AgentCallbackID,
+			"config":            config,
+			"size":              len(config),
+		}, nil
 }
 
 // handleImportCallbackConfig imports a callback configuration
@@ -302,14 +302,14 @@ func (s *Server) handleImportCallbackConfig(ctx context.Context, req *mcp.CallTo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: "Successfully imported callback configuration",
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: "Successfully imported callback configuration",
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"success": true,
+		}, nil
 }
 
 // handleGetCallbackTokens retrieves tokens for a callback
@@ -341,18 +341,18 @@ func (s *Server) handleAddCallbackEdge(ctx context.Context, req *mcp.CallToolReq
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully added P2P edge: callback %d → callback %d (via %s)",
-					args.SourceID, args.DestinationID, args.C2ProfileName),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully added P2P edge: callback %d → callback %d (via %s)",
+						args.SourceID, args.DestinationID, args.C2ProfileName),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"source_id":       args.SourceID,
-		"destination_id":  args.DestinationID,
-		"c2_profile_name": args.C2ProfileName,
-		"success":         true,
-	}, nil
+		}, map[string]interface{}{
+			"source_id":       args.SourceID,
+			"destination_id":  args.DestinationID,
+			"c2_profile_name": args.C2ProfileName,
+			"success":         true,
+		}, nil
 }
 
 // handleRemoveCallbackEdge removes a P2P callback edge
@@ -363,13 +363,13 @@ func (s *Server) handleRemoveCallbackEdge(ctx context.Context, req *mcp.CallTool
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully removed P2P edge %d", args.EdgeID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully removed P2P edge %d", args.EdgeID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"edge_id": args.EdgeID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"edge_id": args.EdgeID,
+			"success": true,
+		}, nil
 }

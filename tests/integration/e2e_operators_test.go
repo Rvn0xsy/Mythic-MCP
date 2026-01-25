@@ -122,9 +122,9 @@ func TestE2E_Operators_Preferences(t *testing.T) {
 	updateResult, err := setup.CallMCPTool("mythic_update_operator_preferences", map[string]interface{}{
 		"operator_id": currentOp.ID,
 		"preferences": map[string]interface{}{
-			"test_key":   "test_value",
-			"theme":      "dark",
-			"font_size":  14,
+			"test_key":  "test_value",
+			"theme":     "dark",
+			"font_size": 14,
 		},
 	})
 	require.NoError(t, err)

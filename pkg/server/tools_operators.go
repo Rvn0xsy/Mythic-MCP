@@ -241,15 +241,15 @@ func (s *Server) handleUpdateOperatorStatus(ctx context.Context, req *mcp.CallTo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully updated operator %d status", args.OperatorID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully updated operator %d status", args.OperatorID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"operator_id": args.OperatorID,
-		"success":     true,
-	}, nil
+		}, map[string]interface{}{
+			"operator_id": args.OperatorID,
+			"success":     true,
+		}, nil
 }
 
 // handleUpdatePasswordEmail updates password and email
@@ -267,14 +267,14 @@ func (s *Server) handleUpdatePasswordEmail(ctx context.Context, req *mcp.CallToo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: "Successfully updated operator password and/or email",
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: "Successfully updated operator password and/or email",
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"success": true,
+		}, nil
 }
 
 // handleGetOperatorPreferences retrieves operator preferences
@@ -311,15 +311,15 @@ func (s *Server) handleUpdateOperatorPreferences(ctx context.Context, req *mcp.C
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully updated preferences for operator %d", args.OperatorID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully updated preferences for operator %d", args.OperatorID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"operator_id": args.OperatorID,
-		"success":     true,
-	}, nil
+		}, map[string]interface{}{
+			"operator_id": args.OperatorID,
+			"success":     true,
+		}, nil
 }
 
 // handleGetOperatorSecrets retrieves operator secrets
@@ -356,15 +356,15 @@ func (s *Server) handleUpdateOperatorSecrets(ctx context.Context, req *mcp.CallT
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully updated secrets for operator %d", args.OperatorID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully updated secrets for operator %d", args.OperatorID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"operator_id": args.OperatorID,
-		"success":     true,
-	}, nil
+		}, map[string]interface{}{
+			"operator_id": args.OperatorID,
+			"success":     true,
+		}, nil
 }
 
 // handleGetInviteLinks retrieves all invite links
@@ -452,13 +452,13 @@ func (s *Server) handleUpdateOperatorOperation(ctx context.Context, req *mcp.Cal
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully updated operators for operation %d", args.OperationID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully updated operators for operation %d", args.OperationID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"operation_id": args.OperationID,
-		"success":      true,
-	}, nil
+		}, map[string]interface{}{
+			"operation_id": args.OperationID,
+			"success":      true,
+		}, nil
 }

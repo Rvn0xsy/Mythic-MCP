@@ -185,16 +185,16 @@ func (s *Server) handleUploadFile(ctx context.Context, req *mcp.CallToolRequest,
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully uploaded file '%s'\nFile UUID: %s\nSize: %d bytes", args.Filename, agentFileID, len(fileData)),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully uploaded file '%s'\nFile UUID: %s\nSize: %d bytes", args.Filename, agentFileID, len(fileData)),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"agent_file_id": agentFileID,
-		"filename":      args.Filename,
-		"size":          len(fileData),
-	}, nil
+		}, map[string]interface{}{
+			"agent_file_id": agentFileID,
+			"filename":      args.Filename,
+			"size":          len(fileData),
+		}, nil
 }
 
 // handleDownloadFile downloads a file from Mythic
@@ -208,16 +208,16 @@ func (s *Server) handleDownloadFile(ctx context.Context, req *mcp.CallToolReques
 	encodedData := base64.StdEncoding.EncodeToString(fileData)
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully downloaded file %s\nSize: %d bytes\n\nFile data is base64-encoded in the metadata.", args.FileUUID, len(fileData)),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully downloaded file %s\nSize: %d bytes\n\nFile data is base64-encoded in the metadata.", args.FileUUID, len(fileData)),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"file_uuid": args.FileUUID,
-		"size":      len(fileData),
-		"file_data": encodedData,
-	}, nil
+		}, map[string]interface{}{
+			"file_uuid": args.FileUUID,
+			"size":      len(fileData),
+			"file_data": encodedData,
+		}, nil
 }
 
 // handleDeleteFile deletes a file from Mythic
@@ -228,15 +228,15 @@ func (s *Server) handleDeleteFile(ctx context.Context, req *mcp.CallToolRequest,
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted file %s", args.FileID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted file %s", args.FileID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"file_id": args.FileID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"file_id": args.FileID,
+			"success": true,
+		}, nil
 }
 
 // handleBulkDownloadFiles downloads multiple files as a ZIP
@@ -252,15 +252,15 @@ func (s *Server) handleBulkDownloadFiles(ctx context.Context, req *mcp.CallToolR
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully created bulk download for %d files\nDownload URL: %s", len(args.FileUUIDs), zipURL),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully created bulk download for %d files\nDownload URL: %s", len(args.FileUUIDs), zipURL),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"zip_url":    zipURL,
-		"file_count": len(args.FileUUIDs),
-	}, nil
+		}, map[string]interface{}{
+			"zip_url":    zipURL,
+			"file_count": len(args.FileUUIDs),
+		}, nil
 }
 
 // handlePreviewFile previews a file's content

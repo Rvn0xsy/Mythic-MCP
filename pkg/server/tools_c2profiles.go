@@ -240,16 +240,16 @@ func (s *Server) handleStartC2Profile(ctx context.Context, req *mcp.CallToolRequ
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully started C2 profile %d", args.ProfileID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully started C2 profile %d", args.ProfileID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"profile_id": args.ProfileID,
-		"action":     "start",
-		"success":    true,
-	}, nil
+		}, map[string]interface{}{
+			"profile_id": args.ProfileID,
+			"action":     "start",
+			"success":    true,
+		}, nil
 }
 
 // handleStopC2Profile stops a C2 profile
@@ -260,16 +260,16 @@ func (s *Server) handleStopC2Profile(ctx context.Context, req *mcp.CallToolReque
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully stopped C2 profile %d", args.ProfileID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully stopped C2 profile %d", args.ProfileID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"profile_id": args.ProfileID,
-		"action":     "stop",
-		"success":    true,
-	}, nil
+		}, map[string]interface{}{
+			"profile_id": args.ProfileID,
+			"action":     "stop",
+			"success":    true,
+		}, nil
 }
 
 // handleGetC2ProfileOutput retrieves C2 profile output
@@ -301,16 +301,16 @@ func (s *Server) handleC2HostFile(ctx context.Context, req *mcp.CallToolRequest,
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully hosted file %s on C2 profile %d", args.FileUUID, args.ProfileID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully hosted file %s on C2 profile %d", args.FileUUID, args.ProfileID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"profile_id": args.ProfileID,
-		"file_uuid":  args.FileUUID,
-		"success":    true,
-	}, nil
+		}, map[string]interface{}{
+			"profile_id": args.ProfileID,
+			"file_uuid":  args.FileUUID,
+			"success":    true,
+		}, nil
 }
 
 // handleC2SampleMessage retrieves a sample C2 message

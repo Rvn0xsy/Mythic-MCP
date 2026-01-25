@@ -117,14 +117,14 @@ func (s *Server) handleIsAuthenticated(ctx context.Context, req *mcp.CallToolReq
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: status,
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: status,
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"authenticated": isAuth,
-	}, nil
+		}, map[string]interface{}{
+			"authenticated": isAuth,
+		}, nil
 }
 
 // handleGetCurrentUser retrieves current user information
@@ -178,14 +178,14 @@ func (s *Server) handleDeleteAPIToken(ctx context.Context, req *mcp.CallToolRequ
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: "Successfully deleted API token",
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: "Successfully deleted API token",
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"success": true,
+		}, nil
 }
 
 // handleRefreshToken refreshes the current access token
@@ -195,12 +195,12 @@ func (s *Server) handleRefreshToken(ctx context.Context, req *mcp.CallToolReques
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: "Successfully refreshed access token",
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: "Successfully refreshed access token",
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"success": true,
+		}, nil
 }

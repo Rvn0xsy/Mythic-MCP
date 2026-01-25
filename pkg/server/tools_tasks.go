@@ -175,7 +175,7 @@ type requestOpsecBypassArgs struct {
 }
 
 type addMitreAttackToTaskArgs struct {
-	TaskID     int    `json:"task_id" jsonschema:"required,description=Display ID of the task"`
+	TaskID      int    `json:"task_id" jsonschema:"required,description=Display ID of the task"`
 	TechniqueID string `json:"technique_id" jsonschema:"required,description=MITRE ATT&CK technique ID (e.g., T1055)"`
 }
 
@@ -267,15 +267,15 @@ func (s *Server) handleUpdateTask(ctx context.Context, req *mcp.CallToolRequest,
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully updated task %d", args.TaskID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully updated task %d", args.TaskID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"task_id": args.TaskID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"task_id": args.TaskID,
+			"success": true,
+		}, nil
 }
 
 // handleGetCallbackTasks retrieves tasks for a callback
@@ -397,15 +397,15 @@ func (s *Server) handleReissueTask(ctx context.Context, req *mcp.CallToolRequest
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully reissued task %d", args.TaskID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully reissued task %d", args.TaskID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"task_id": args.TaskID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"task_id": args.TaskID,
+			"success": true,
+		}, nil
 }
 
 // handleReissueTaskWithHandler reissues a task with handler
@@ -416,15 +416,15 @@ func (s *Server) handleReissueTaskWithHandler(ctx context.Context, req *mcp.Call
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully reissued task %d with handler", args.TaskID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully reissued task %d with handler", args.TaskID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"task_id": args.TaskID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"task_id": args.TaskID,
+			"success": true,
+		}, nil
 }
 
 // handleGetTaskArtifacts retrieves artifacts for a task
@@ -463,15 +463,15 @@ func (s *Server) handleRequestOpsecBypass(ctx context.Context, req *mcp.CallTool
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully requested OPSEC bypass for task %d", args.TaskID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully requested OPSEC bypass for task %d", args.TaskID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"task_id": args.TaskID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"task_id": args.TaskID,
+			"success": true,
+		}, nil
 }
 
 // handleAddMitreAttackToTask adds MITRE ATT&CK mapping to a task
@@ -482,17 +482,17 @@ func (s *Server) handleAddMitreAttackToTask(ctx context.Context, req *mcp.CallTo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully added MITRE ATT&CK technique %s to task %d",
-					args.TechniqueID, args.TaskID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully added MITRE ATT&CK technique %s to task %d",
+						args.TechniqueID, args.TaskID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"task_id":      args.TaskID,
-		"technique_id": args.TechniqueID,
-		"success":      true,
-	}, nil
+		}, map[string]interface{}{
+			"task_id":      args.TaskID,
+			"technique_id": args.TechniqueID,
+			"success":      true,
+		}, nil
 }
 
 // Tool handlers for response operations

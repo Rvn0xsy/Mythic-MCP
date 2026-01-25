@@ -260,15 +260,15 @@ func (s *Server) handleDeleteTagType(ctx context.Context, req *mcp.CallToolReque
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted tag type %d", args.TagTypeID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted tag type %d", args.TagTypeID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"tag_type_id": args.TagTypeID,
-		"success":     true,
-	}, nil
+		}, map[string]interface{}{
+			"tag_type_id": args.TagTypeID,
+			"success":     true,
+		}, nil
 }
 
 // handleCreateTag creates a tag on an object
@@ -369,13 +369,13 @@ func (s *Server) handleDeleteTag(ctx context.Context, req *mcp.CallToolRequest, 
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted tag %d", args.TagID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted tag %d", args.TagID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"tag_id":  args.TagID,
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"tag_id":  args.TagID,
+			"success": true,
+		}, nil
 }

@@ -188,9 +188,9 @@ func TestE2E_Callbacks_GraphEdges(t *testing.T) {
 
 	// Add graph edge (P2P link)
 	addResult, err := setup.CallMCPTool("mythic_add_callback_edge", map[string]interface{}{
-		"source_id":        sourceID,
-		"destination_id":   destID,
-		"c2_profile_name":  "default",
+		"source_id":       sourceID,
+		"destination_id":  destID,
+		"c2_profile_name": "default",
 	})
 
 	// Note: This may fail if callbacks aren't compatible or already linked

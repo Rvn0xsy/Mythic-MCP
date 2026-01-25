@@ -9,16 +9,16 @@ import (
 // Config holds the MCP server configuration
 type Config struct {
 	// Mythic connection settings
-	MythicURL      string
-	APIToken       string
-	Username       string
-	Password       string
-	SSL            bool
-	SkipTLSVerify  bool
+	MythicURL     string
+	APIToken      string
+	Username      string
+	Password      string
+	SSL           bool
+	SkipTLSVerify bool
 
 	// Server settings
-	LogLevel       string
-	Timeout        time.Duration
+	LogLevel string
+	Timeout  time.Duration
 }
 
 // LoadFromEnv loads configuration from environment variables

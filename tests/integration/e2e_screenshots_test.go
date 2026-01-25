@@ -1,3 +1,4 @@
+//go:build integration && e2e
 // +build integration,e2e
 
 package integration

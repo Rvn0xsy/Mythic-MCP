@@ -53,9 +53,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	// Register MCP tools
-	if err := server.registerTools(); err != nil {
-		return nil, fmt.Errorf("failed to register tools: %w", err)
-	}
+	server.registerTools()
 
 	return server, nil
 }
@@ -83,7 +81,7 @@ func (s *Server) Close() error {
 }
 
 // registerTools registers all MCP tools
-func (s *Server) registerTools() error {
+func (s *Server) registerTools() {
 	// Phase 1: Authentication tools
 	s.registerAuthTools()
 
@@ -115,6 +113,4 @@ func (s *Server) registerTools() error {
 	// Future phases will add more tool categories:
 	// - Tokens, Browser Scripts, File Browser (Phase 4)
 	// - Eventing, Alerts, Containers, etc. (Phase 5)
-
-	return nil
 }

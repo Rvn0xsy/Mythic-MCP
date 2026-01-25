@@ -249,15 +249,15 @@ func (s *Server) handleSetCurrentOperation(ctx context.Context, req *mcp.CallToo
 	s.mythicClient.SetCurrentOperation(args.OperationID)
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully set current operation to ID %d", args.OperationID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully set current operation to ID %d", args.OperationID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"operation_id": args.OperationID,
-		"success":      true,
-	}, nil
+		}, map[string]interface{}{
+			"operation_id": args.OperationID,
+			"success":      true,
+		}, nil
 }
 
 // handleGetCurrentOperation gets the current operation context
@@ -266,25 +266,25 @@ func (s *Server) handleGetCurrentOperation(ctx context.Context, req *mcp.CallToo
 
 	if currentOpID == nil {
 		return &mcp.CallToolResult{
-			Content: []mcp.Content{
-				&mcp.TextContent{
-					Text: "No current operation set",
+				Content: []mcp.Content{
+					&mcp.TextContent{
+						Text: "No current operation set",
+					},
 				},
-			},
-		}, map[string]interface{}{
-			"operation_id": nil,
-		}, nil
+			}, map[string]interface{}{
+				"operation_id": nil,
+			}, nil
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Current operation ID: %d", *currentOpID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Current operation ID: %d", *currentOpID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"operation_id": *currentOpID,
-	}, nil
+		}, map[string]interface{}{
+			"operation_id": *currentOpID,
+		}, nil
 }
 
 // handleGetOperationOperators gets operators in an operation
@@ -400,12 +400,12 @@ func (s *Server) handleUpdateGlobalSettings(ctx context.Context, req *mcp.CallTo
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: "Successfully updated global settings",
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: "Successfully updated global settings",
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"success": true,
-	}, nil
+		}, map[string]interface{}{
+			"success": true,
+		}, nil
 }

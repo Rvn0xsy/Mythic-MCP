@@ -307,15 +307,15 @@ func (s *Server) handleDeleteCredential(ctx context.Context, req *mcp.CallToolRe
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted credential %d", args.CredentialID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted credential %d", args.CredentialID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"credential_id": args.CredentialID,
-		"success":       true,
-	}, nil
+		}, map[string]interface{}{
+			"credential_id": args.CredentialID,
+			"success":       true,
+		}, nil
 }
 
 // Tool handlers for artifacts
@@ -487,13 +487,13 @@ func (s *Server) handleDeleteArtifact(ctx context.Context, req *mcp.CallToolRequ
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted artifact %d", args.ArtifactID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted artifact %d", args.ArtifactID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"artifact_id": args.ArtifactID,
-		"success":     true,
-	}, nil
+		}, map[string]interface{}{
+			"artifact_id": args.ArtifactID,
+			"success":     true,
+		}, nil
 }

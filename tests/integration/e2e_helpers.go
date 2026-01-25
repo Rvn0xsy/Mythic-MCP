@@ -1,3 +1,4 @@
+//go:build integration && e2e
 // +build integration,e2e
 
 package integration
@@ -19,19 +20,19 @@ import (
 
 // MCPTestSetup provides E2E test infrastructure
 type MCPTestSetup struct {
-	T             *testing.T
-	Ctx           context.Context
-	Cancel        context.CancelFunc
+	T      *testing.T
+	Ctx    context.Context
+	Cancel context.CancelFunc
 
 	// MCP server components
-	MCPServer     *server.Server
-	MCPTransport  *testTransport
+	MCPServer    *server.Server
+	MCPTransport *testTransport
 
 	// Mythic SDK client (for verification)
-	MythicClient  *mythic.Client
+	MythicClient *mythic.Client
 
 	// Cleanup functions
-	cleanupFuncs  []func()
+	cleanupFuncs []func()
 }
 
 // testTransport is an in-memory transport for testing

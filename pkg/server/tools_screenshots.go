@@ -179,17 +179,17 @@ func (s *Server) handleGetScreenshotThumbnail(ctx context.Context, req *mcp.Call
 	encodedData := base64.StdEncoding.EncodeToString(thumbnailData)
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Screenshot thumbnail for %s (%s):\n\nBase64 encoded data:\n%s",
-					args.AgentFileID, formatBytes(int64(len(thumbnailData))), encodedData),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Screenshot thumbnail for %s (%s):\n\nBase64 encoded data:\n%s",
+						args.AgentFileID, formatBytes(int64(len(thumbnailData))), encodedData),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"agent_file_id": args.AgentFileID,
-		"size":          len(thumbnailData),
-		"base64_data":   encodedData,
-	}, nil
+		}, map[string]interface{}{
+			"agent_file_id": args.AgentFileID,
+			"size":          len(thumbnailData),
+			"base64_data":   encodedData,
+		}, nil
 }
 
 // handleDownloadScreenshot downloads a full screenshot
@@ -203,17 +203,17 @@ func (s *Server) handleDownloadScreenshot(ctx context.Context, req *mcp.CallTool
 	encodedData := base64.StdEncoding.EncodeToString(screenshotData)
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Downloaded screenshot %s (%s):\n\nBase64 encoded data:\n%s",
-					args.AgentFileID, formatBytes(int64(len(screenshotData))), encodedData),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Downloaded screenshot %s (%s):\n\nBase64 encoded data:\n%s",
+						args.AgentFileID, formatBytes(int64(len(screenshotData))), encodedData),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"agent_file_id": args.AgentFileID,
-		"size":          len(screenshotData),
-		"base64_data":   encodedData,
-	}, nil
+		}, map[string]interface{}{
+			"agent_file_id": args.AgentFileID,
+			"size":          len(screenshotData),
+			"base64_data":   encodedData,
+		}, nil
 }
 
 // handleDeleteScreenshot deletes a screenshot
@@ -224,15 +224,15 @@ func (s *Server) handleDeleteScreenshot(ctx context.Context, req *mcp.CallToolRe
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully deleted screenshot %s", args.AgentFileID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully deleted screenshot %s", args.AgentFileID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"agent_file_id": args.AgentFileID,
-		"deleted":       true,
-	}, nil
+		}, map[string]interface{}{
+			"agent_file_id": args.AgentFileID,
+			"deleted":       true,
+		}, nil
 }
 
 // formatBytes formats bytes into human-readable string
