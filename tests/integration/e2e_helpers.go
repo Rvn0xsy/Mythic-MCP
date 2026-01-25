@@ -270,6 +270,12 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 			return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 		}
 
+		// Debug: Print response structure if E2E_DEBUG is set
+		if os.Getenv("E2E_DEBUG") == "1" {
+			debugData, _ := json.MarshalIndent(response, "", "  ")
+			fmt.Printf("DEBUG: MCP Response for %s:\n%s\n", toolName, string(debugData))
+		}
+
 		// Check for error in response
 		if errObj, ok := response["error"]; ok {
 			return nil, fmt.Errorf("MCP error: %v", errObj)
@@ -290,24 +296,23 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 			return map[string]interface{}{"result": resultField}, nil
 		}
 
-		// Extract metadata if present (MCP SDK includes it as _meta)
+		// Extract structured content (domain objects) from MCP response
+		// The MCP SDK puts the second return value in "structuredContent" field
 		var normalizedResult = make(map[string]interface{})
 
-		// Copy metadata if present
-		if meta, ok := result["_meta"]; ok {
-			normalizedResult["metadata"] = meta
-
-			// Also copy metadata fields as content for tests expecting arrays
-			// The _meta field contains the actual domain objects from our tool handlers
-			normalizedResult["content"] = meta
+		// Copy structuredContent as both "metadata" and "content" for test compatibility
+		// This field contains the actual domain objects from our tool handlers
+		if structuredContent, ok := result["structuredContent"]; ok {
+			normalizedResult["metadata"] = structuredContent
+			normalizedResult["content"] = structuredContent
 		}
 
-		// Copy content field (MCP Content array)
+		// Also copy MCP Content array (text content) as mcp_content for reference
 		if content, ok := result["content"]; ok {
 			normalizedResult["mcp_content"] = content
 
-			// If we don't have metadata yet, content might be what we want
-			if _, hasContent := normalizedResult["content"]; !hasContent {
+			// If we don't have structured content, use content field
+			if _, hasStructured := normalizedResult["content"]; !hasStructured {
 				normalizedResult["content"] = content
 			}
 		}
@@ -315,6 +320,11 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 		// Copy isError field
 		if isError, ok := result["isError"]; ok {
 			normalizedResult["isError"] = isError
+		}
+
+		// Copy _meta if present (for backward compatibility)
+		if meta, ok := result["_meta"]; ok {
+			normalizedResult["_meta"] = meta
 		}
 
 		// If normalized result is empty, return original result
