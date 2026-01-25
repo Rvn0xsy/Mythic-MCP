@@ -1,0 +1,307 @@
+name: E2E Integration Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  e2e-integration:
+    name: E2E Tests - ${{ matrix.test-group }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test-group:
+          - "Phase 0: Authentication"
+          - "Phase 1: Core Setup"
+          - "Phase 2: C2 & Payloads"
+          - "Phase 3: Agents & Callbacks"
+          - "Phase 4: Tasks & Responses"
+          - "Phase 5: Artifacts & Credentials"
+        include:
+          - test-group: "Phase 0: Authentication"
+            test-pattern: "TestE2E_Auth"
+          - test-group: "Phase 1: Core Setup"
+            test-pattern: "TestE2E_Operations|TestE2E_Operators|TestE2E_Tags|TestE2E_Files|TestE2E_Hosts"
+          - test-group: "Phase 2: C2 & Payloads"
+            test-pattern: "TestE2E_C2Profiles|TestE2E_Payloads|TestE2E_Commands|TestE2E_Attack"
+          - test-group: "Phase 3: Agents & Callbacks"
+            test-pattern: "TestE2E_Callbacks"
+          - test-group: "Phase 4: Tasks & Responses"
+            test-pattern: "TestE2E_Tasks|TestE2E_Responses|TestE2E_Processes|TestE2E_Keylogs|TestE2E_Screenshots"
+          - test-group: "Phase 5: Artifacts & Credentials"
+            test-pattern: "TestE2E_Artifacts|TestE2E_Credentials"
+
+    steps:
+      - name: Checkout MCP Server
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Verify Test Compilation
+        run: |
+          echo "::group::Compiling E2E integration tests"
+          if ! go test -c -tags=integration,e2e ./tests/integration -o /dev/null; then
+            echo "::error::❌ E2E integration tests failed to compile"
+            exit 1
+          fi
+          echo "✅ E2E integration tests compiled successfully"
+          echo "::endgroup::"
+
+      - name: Clone Mythic Framework
+        run: |
+          echo "::group::Cloning Mythic"
+          git clone --depth 1 https://github.com/its-a-feature/Mythic.git /tmp/mythic
+          cd /tmp/mythic
+          echo "Mythic version: $(cat VERSION)"
+          echo "::endgroup::"
+
+      - name: Build Mythic CLI
+        run: |
+          echo "::group::Building Mythic CLI"
+          cd /tmp/mythic
+          sudo make
+          sudo chmod +x mythic-cli
+          echo "✅ Mythic CLI built successfully"
+          echo "::endgroup::"
+
+      - name: Configure Mythic
+        run: |
+          echo "::group::Configuring Mythic"
+          cd /tmp/mythic
+          sudo ./mythic-cli config set jupyter_bind_localhost_only false || true
+          echo "::endgroup::"
+
+      - name: Start Mythic Services
+        run: |
+          echo "::group::Starting Mythic services"
+          cd /tmp/mythic
+          sudo ./mythic-cli start
+          echo "::endgroup::"
+
+      - name: Install HTTP C2 Profile
+        run: |
+          echo "::group::Installing HTTP C2 Profile"
+          cd /tmp/mythic
+          sudo ./mythic-cli install github https://github.com/MythicC2Profiles/http
+          echo "✅ HTTP C2 Profile installed"
+          echo "::endgroup::"
+
+      - name: Install Poseidon Agent
+        run: |
+          echo "::group::Installing Poseidon Agent"
+          cd /tmp/mythic
+          sudo ./mythic-cli install github https://github.com/MythicAgents/Poseidon
+          echo "✅ Poseidon Agent installed"
+          echo "::endgroup::"
+
+      - name: Wait for Agent and C2 Containers
+        run: |
+          echo "::group::Waiting for agent and C2 containers to start"
+          cd /tmp/mythic
+          timeout=240
+          attempt=0
+
+          while [ $attempt -lt $timeout ]; do
+            # Check if http container is running
+            http_running=$(sudo docker ps --filter "name=mythic_http" --format "{{.Status}}" | grep -c "Up" || echo "0")
+
+            # Check if poseidon container is running
+            poseidon_running=$(sudo docker ps --filter "name=mythic_poseidon" --format "{{.Status}}" | grep -c "Up" || echo "0")
+
+            if [ "$http_running" -eq "1" ] && [ "$poseidon_running" -eq "1" ]; then
+              echo "✅ All containers ready after $attempt seconds"
+              echo "HTTP C2 Profile: Running"
+              echo "Poseidon Agent: Running"
+              sudo docker ps --filter "name=mythic_"
+              break
+            fi
+
+            echo "Waiting for containers... (HTTP: $http_running, Poseidon: $poseidon_running)"
+            sleep 5
+            attempt=$((attempt + 5))
+          done
+
+          if [ $attempt -ge $timeout ]; then
+            echo "::error::❌ Containers did not start within timeout"
+            sudo docker ps -a
+            sudo ./mythic-cli status
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      - name: Wait for Mythic API Ready
+        run: |
+          echo "::group::Waiting for Mythic API to be ready"
+          timeout=180
+          attempt=0
+          while [ $attempt -lt $timeout ]; do
+            if curl -k -s https://127.0.0.1:7443/api/v1.4/healthcheck > /dev/null 2>&1; then
+              echo "✅ Mythic API is ready after $attempt seconds"
+              break
+            fi
+            sleep 5
+            attempt=$((attempt + 5))
+          done
+
+          if [ $attempt -ge $timeout ]; then
+            echo "::error::❌ Mythic API failed to start within timeout"
+            cd /tmp/mythic
+            sudo ./mythic-cli status
+            sudo docker logs mythic_server || true
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      - name: Extract Mythic Credentials
+        id: mythic-creds
+        run: |
+          PASSWORD=$(grep MYTHIC_ADMIN_PASSWORD /tmp/mythic/.env | cut -d'=' -f2 | tr -d '"')
+          echo "::add-mask::$PASSWORD"
+          echo "password=$PASSWORD" >> $GITHUB_OUTPUT
+          echo "✅ Extracted Mythic credentials"
+
+      - name: Verify Mythic Status
+        run: |
+          echo "::group::Mythic Status"
+          cd /tmp/mythic
+          sudo ./mythic-cli status
+          echo ""
+          echo "Running containers:"
+          sudo docker ps --filter "name=mythic" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+          echo "::endgroup::"
+
+      - name: Run E2E Integration Tests - ${{ matrix.test-group }}
+        env:
+          MYTHIC_URL: "https://127.0.0.1:7443"
+          MYTHIC_USERNAME: "mythic_admin"
+          MYTHIC_PASSWORD: ${{ steps.mythic-creds.outputs.password }}
+          MYTHIC_SKIP_TLS_VERIFY: "true"
+        run: |
+          echo "::group::Running ${{ matrix.test-group }}"
+          echo "Test Pattern: ${{ matrix.test-pattern }}"
+          echo "Mythic URL: $MYTHIC_URL"
+          echo "Mythic User: $MYTHIC_USERNAME"
+
+          # Run tests and capture exit code
+          set +e
+          TEST_LOG_FILE="e2e-test-output-$(echo '${{ matrix.test-group }}' | tr ' :&' '_').log"
+          go test -v -tags=integration,e2e ./tests/integration/... \
+            -run "${{ matrix.test-pattern }}" \
+            -timeout 12m \
+            2>&1 | tee "$TEST_LOG_FILE"
+
+          TEST_EXIT_CODE=$?
+          set -e
+
+          echo "::endgroup::"
+
+          # Parse test results
+          echo "::group::Test Results Summary"
+          PASSED=$(grep -c "^--- PASS:" "$TEST_LOG_FILE" || echo "0")
+          FAILED=$(grep -c "^--- FAIL:" "$TEST_LOG_FILE" || echo "0")
+          SKIPPED=$(grep -c "^--- SKIP:" "$TEST_LOG_FILE" || echo "0")
+          TOTAL=$(grep -c "^=== RUN" "$TEST_LOG_FILE" || echo "0")
+
+          echo "📊 Test Results for ${{ matrix.test-group }}:"
+          echo "   Total Tests: $TOTAL"
+          echo "   Passed: $PASSED"
+          echo "   Failed: $FAILED"
+          echo "   Skipped: $SKIPPED"
+          echo ""
+
+          # CI-First Philosophy: Treat test skips as warnings, not failures
+          if [ $SKIPPED -gt 0 ]; then
+            echo "::warning::⚠️  $SKIPPED test(s) were skipped - investigate why tests cannot run"
+          fi
+
+          if [ $TEST_EXIT_CODE -ne 0 ]; then
+            echo "::error::❌ Tests failed with exit code $TEST_EXIT_CODE"
+            echo "::endgroup::"
+            exit $TEST_EXIT_CODE
+          fi
+
+          if [ $FAILED -gt 0 ]; then
+            echo "::error::❌ $FAILED test(s) failed"
+            echo "::endgroup::"
+            exit 1
+          fi
+
+          echo "✅ All tests passed!"
+          echo "::endgroup::"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results-${{ strategy.job-index }}
+          path: e2e-test-output-*.log
+          retention-days: 7
+
+      - name: Collect Mythic Logs on Failure
+        if: failure()
+        run: |
+          echo "::group::Collecting Mythic logs"
+          cd /tmp/mythic
+          mkdir -p mythic-failure-logs
+          sudo ./mythic-cli logs > mythic-failure-logs/mythic-cli-logs.txt 2>&1 || true
+          sudo docker ps -a > mythic-failure-logs/docker-containers.txt || true
+          sudo docker logs mythic_server > mythic-failure-logs/mythic-server.log 2>&1 || true
+          sudo docker logs mythic_postgres > mythic-failure-logs/mythic-postgres.log 2>&1 || true
+          sudo docker logs mythic_rabbitmq > mythic-failure-logs/mythic-rabbitmq.log 2>&1 || true
+          sudo docker logs mythic_http > mythic-failure-logs/mythic-http.log 2>&1 || true
+          sudo docker logs mythic_poseidon > mythic-failure-logs/mythic-poseidon.log 2>&1 || true
+          sudo ./mythic-cli status > mythic-failure-logs/mythic-status.txt 2>&1 || true
+          echo "::endgroup::"
+
+      - name: Upload Mythic Failure Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mythic-failure-logs-${{ strategy.job-index }}
+          path: /tmp/mythic/mythic-failure-logs/
+          retention-days: 7
+
+      - name: Cleanup Mythic
+        if: always()
+        run: |
+          echo "::group::Cleaning up Mythic"
+          cd /tmp/mythic
+          sudo ./mythic-cli stop || true
+          sudo docker system prune -af || true
+          echo "✅ Cleanup complete"
+          echo "::endgroup::"
+
+  # Summary job that requires all matrix jobs to pass
+  e2e-integration-summary:
+    name: E2E Integration Tests - Summary
+    runs-on: ubuntu-latest
+    needs: e2e-integration
+    if: always()
+
+    steps:
+      - name: Check E2E Integration Test Results
+        run: |
+          echo "::group::E2E Integration Test Summary"
+          if [ "${{ needs.e2e-integration.result }}" != "success" ]; then
+            echo "::error::❌ Some E2E integration tests failed or were cancelled"
+            echo "Check the individual test phase results above for details"
+            exit 1
+          fi
+          echo "✅ All E2E integration test phases passed!"
+          echo "   - Phase 0: Authentication"
+          echo "   - Phase 1: Core Setup"
+          echo "   - Phase 2: C2 & Payloads"
+          echo "   - Phase 3: Agents & Callbacks"
+          echo "   - Phase 4: Tasks & Responses"
+          echo "   - Phase 5: Artifacts & Credentials"
+          echo "::endgroup::"
