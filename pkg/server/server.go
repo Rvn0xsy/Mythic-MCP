@@ -107,9 +107,10 @@ func (s *Server) registerTools() error {
 
 	// Phase 4: Advanced Features - MITRE ATT&CK, Processes, Hosts, etc.
 	s.registerAttackTools()
+	s.registerProcessesTools()
 
 	// Future phases will add more tool categories:
-	// - Processes, Hosts, Screenshots, Keylogs (Phase 4)
+	// - Hosts, Screenshots, Keylogs (Phase 4)
 	// - Tokens, Browser Scripts, File Browser (Phase 4)
 	// - Eventing, Alerts, Containers, etc. (Phase 5)
 

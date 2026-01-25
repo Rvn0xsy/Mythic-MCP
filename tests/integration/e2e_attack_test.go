@@ -1,3 +1,5 @@
+// +build integration,e2e
+
 package integration
 
 import (
