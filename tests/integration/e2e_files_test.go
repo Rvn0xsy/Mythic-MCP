@@ -78,7 +78,7 @@ func TestE2E_Files_GetFiles(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Result should contain file listing
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 	// Note: May be empty if no files exist yet
 }
@@ -95,7 +95,7 @@ func TestE2E_Files_GetDownloadedFiles(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Result should contain file listing
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 

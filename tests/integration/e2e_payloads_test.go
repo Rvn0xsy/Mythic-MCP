@@ -72,7 +72,7 @@ func TestE2E_Payloads_CreatePayload(t *testing.T) {
 	}
 
 	// Get a callback to use as template (optional)
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
+	_, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
 	require.NoError(t, err)
 
 	// Create a basic payload
@@ -184,11 +184,11 @@ func TestE2E_Payloads_GetPayloadOnHost(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get payloads on host
 	result, err := setup.CallMCPTool("mythic_get_payload_on_host", map[string]interface{}{

@@ -143,11 +143,11 @@ func TestE2E_Attack_GetAttacksByOperation(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get attack techniques for operation
 	result, err := setup.CallMCPTool("mythic_get_attacks_by_operation", map[string]interface{}{
@@ -229,10 +229,10 @@ func TestE2E_Attack_FullWorkflow(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID != nil {
+	if me.CurrentOperation != nil {
 		// 5. Get all techniques used in operation
 		operationTechniquesResult, err := setup.CallMCPTool("mythic_get_attacks_by_operation", map[string]interface{}{
-			"operation_id": *me.CurrentOperationID,
+			"operation_id": me.CurrentOperation.ID,
 		})
 		require.NoError(t, err)
 		require.NotNil(t, operationTechniquesResult)

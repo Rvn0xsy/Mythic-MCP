@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/nbaertsch/Mythic-MCP/pkg/config"
 	"github.com/nbaertsch/Mythic-MCP/pkg/server"
@@ -35,47 +36,93 @@ type MCPTestSetup struct {
 	cleanupFuncs []func()
 }
 
-// testTransport is an in-memory transport for testing
+// testTransport is an in-memory transport for testing (MCP SDK v1.2.0 compatible)
 type testTransport struct {
-	serverToClient chan []byte
-	clientToServer chan []byte
+	conn *testConnection
+}
+
+// testConnection implements mcp.Connection for testing
+type testConnection struct {
+	serverToClient chan jsonrpc.Message
+	clientToServer chan jsonrpc.Message
 	closed         bool
 }
 
 // newTestTransport creates a new test transport
 func newTestTransport() *testTransport {
 	return &testTransport{
-		serverToClient: make(chan []byte, 10),
-		clientToServer: make(chan []byte, 10),
+		conn: &testConnection{
+			serverToClient: make(chan jsonrpc.Message, 10),
+			clientToServer: make(chan jsonrpc.Message, 10),
+		},
 	}
 }
 
-func (t *testTransport) Read() ([]byte, error) {
-	if t.closed {
-		return nil, fmt.Errorf("transport closed")
-	}
-	data, ok := <-t.clientToServer
-	if !ok {
-		return nil, fmt.Errorf("transport closed")
-	}
-	return data, nil
+// Connect implements mcp.Transport interface (v1.2.0)
+func (t *testTransport) Connect(ctx context.Context) (mcp.Connection, error) {
+	return t.conn, nil
 }
 
-func (t *testTransport) Write(data []byte) error {
-	if t.closed {
-		return fmt.Errorf("transport closed")
+// Read implements mcp.Connection interface
+func (c *testConnection) Read(ctx context.Context) (jsonrpc.Message, error) {
+	if c.closed {
+		return nil, fmt.Errorf("connection closed")
 	}
-	t.serverToClient <- data
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case msg, ok := <-c.clientToServer:
+		if !ok {
+			return nil, fmt.Errorf("connection closed")
+		}
+		return msg, nil
+	}
+}
+
+// Write implements mcp.Connection interface
+func (c *testConnection) Write(ctx context.Context, msg jsonrpc.Message) error {
+	if c.closed {
+		return fmt.Errorf("connection closed")
+	}
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case c.serverToClient <- msg:
+		return nil
+	}
+}
+
+// Close implements mcp.Connection interface
+func (c *testConnection) Close() error {
+	if !c.closed {
+		c.closed = true
+		close(c.serverToClient)
+		close(c.clientToServer)
+	}
 	return nil
 }
 
+// SessionID implements mcp.Connection interface
+func (c *testConnection) SessionID() string {
+	return "test-session"
+}
+
+// Helper methods for testing
+
+// SendMessage sends a message from client to server (for testing)
+func (t *testTransport) SendMessage(msg jsonrpc.Message) {
+	t.conn.clientToServer <- msg
+}
+
+// ReceiveMessage receives a message from server to client (for testing)
+func (t *testTransport) ReceiveMessage() (jsonrpc.Message, bool) {
+	msg, ok := <-t.conn.serverToClient
+	return msg, ok
+}
+
+// Close closes the transport
 func (t *testTransport) Close() error {
-	if !t.closed {
-		t.closed = true
-		close(t.serverToClient)
-		close(t.clientToServer)
-	}
-	return nil
+	return t.conn.Close()
 }
 
 // SetupE2ETest creates complete E2E test environment
@@ -193,12 +240,31 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
+	// Decode to JSON-RPC message
+	requestMsg, err := jsonrpc.DecodeMessage(requestData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode request message: %w", err)
+	}
+
 	// Send request
-	s.MCPTransport.clientToServer <- requestData
+	s.MCPTransport.SendMessage(requestMsg)
 
 	// Wait for response (with timeout)
 	select {
-	case responseData := <-s.MCPTransport.serverToClient:
+	case <-time.After(10 * time.Second):
+		return nil, fmt.Errorf("timeout waiting for MCP response")
+	default:
+		responseMsg, ok := s.MCPTransport.ReceiveMessage()
+		if !ok {
+			return nil, fmt.Errorf("transport closed")
+		}
+
+		// Encode message back to JSON to parse
+		responseData, err := json.Marshal(responseMsg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal response: %w", err)
+		}
+
 		var response map[string]interface{}
 		if err := json.Unmarshal(responseData, &response); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal response: %w", err)
@@ -210,9 +276,6 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 		}
 
 		return response, nil
-
-	case <-time.After(10 * time.Second):
-		return nil, fmt.Errorf("timeout waiting for MCP response")
 	}
 }
 

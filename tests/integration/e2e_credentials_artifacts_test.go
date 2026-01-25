@@ -68,7 +68,7 @@ func TestE2E_Credentials_GetCredentials(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Result should contain credentials array
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 
@@ -89,7 +89,7 @@ func TestE2E_Credentials_GetByOperation(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 
@@ -149,7 +149,7 @@ func TestE2E_Artifacts_GetArtifacts(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 
@@ -170,7 +170,7 @@ func TestE2E_Artifacts_GetByOperation(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 
@@ -194,7 +194,7 @@ func TestE2E_Artifacts_GetByHost(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Should contain at least our artifact
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 	require.NotEmpty(t, content, "Expected at least one artifact")
 
@@ -222,7 +222,7 @@ func TestE2E_Artifacts_GetByType(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Result should be an array (may be empty)
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 
 	// Cleanup

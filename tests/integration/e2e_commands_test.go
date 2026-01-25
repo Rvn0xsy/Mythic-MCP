@@ -184,7 +184,7 @@ func TestE2E_Commands_CommandDetails(t *testing.T) {
 	t.Logf("Command '%s' details:", command.Cmd)
 	t.Logf("  - Version: %d", command.Version)
 	t.Logf("  - Description: %s", command.Description)
-	t.Logf("  - Help: %s", command.HelpCmd)
+	t.Logf("  - Help: %s", command.Help)
 	t.Logf("  - Parameters: %d", len(cmdWithParams.Parameters))
 
 	// Check if it's a raw string command

@@ -18,11 +18,11 @@ func TestE2E_Hosts_GetHosts(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get hosts for operation
 	result, err := setup.CallMCPTool("mythic_get_hosts", map[string]interface{}{
@@ -44,11 +44,11 @@ func TestE2E_Hosts_GetHostByID(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get hosts to find a valid ID
 	hosts, err := setup.MythicClient.GetHosts(setup.Ctx, operationID)
@@ -78,11 +78,11 @@ func TestE2E_Hosts_GetHostByHostname(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get hosts to find a valid hostname
 	hosts, err := setup.MythicClient.GetHosts(setup.Ctx, operationID)
@@ -112,11 +112,11 @@ func TestE2E_Hosts_GetHostNetworkMap(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get network map
 	result, err := setup.CallMCPTool("mythic_get_host_network_map", map[string]interface{}{
@@ -136,11 +136,11 @@ func TestE2E_Hosts_GetCallbacksForHost(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get hosts to find a valid host ID
 	hosts, err := setup.MythicClient.GetHosts(setup.Ctx, operationID)
@@ -203,11 +203,11 @@ func TestE2E_Hosts_FullWorkflow(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set for full workflow test")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// 1. Get all hosts in operation
 	hostsResult, err := setup.CallMCPTool("mythic_get_hosts", map[string]interface{}{
@@ -265,11 +265,11 @@ func TestE2E_Hosts_HostDetails(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get all hosts
 	hosts, err := setup.MythicClient.GetHosts(setup.Ctx, operationID)

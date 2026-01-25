@@ -68,7 +68,7 @@ func TestE2E_Tags_GetTagTypes(t *testing.T) {
 	require.NotNil(t, result)
 
 	// Result should contain tag types array
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 	// May be empty if no tag types exist
 }
@@ -90,7 +90,7 @@ func TestE2E_Tags_GetTagTypesByOperation(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 
@@ -172,7 +172,7 @@ func TestE2E_Tags_GetTagsByOperation(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, result)
 
-	content, ok := result["content"].([]interface{})
+	_, ok := result["content"].([]interface{})
 	require.True(t, ok, "Expected content to be an array")
 }
 
@@ -320,9 +320,9 @@ func TestE2E_Tags_FullWorkflow(t *testing.T) {
 	// 6. Get current operation's tags
 	currentOp, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
-	if currentOp.CurrentOperationID != nil {
+	if currentOp.CurrentOperation.ID != nil {
 		opTagsResult, err := setup.CallMCPTool("mythic_get_tags_by_operation", map[string]interface{}{
-			"operation_id": *currentOp.CurrentOperationID,
+			"operation_id": currentOp.CurrentOperation.ID,
 		})
 		require.NoError(t, err)
 		require.NotNil(t, opTagsResult)

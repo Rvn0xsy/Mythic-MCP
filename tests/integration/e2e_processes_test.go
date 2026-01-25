@@ -33,11 +33,11 @@ func TestE2E_Processes_GetProcessesByOperation(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get processes for operation
 	result, err := setup.CallMCPTool("mythic_get_processes_by_operation", map[string]interface{}{
@@ -111,11 +111,11 @@ func TestE2E_Processes_GetProcessesByHost(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get hosts
 	hosts, err := setup.MythicClient.GetHosts(setup.Ctx, operationID)
@@ -183,11 +183,11 @@ func TestE2E_Processes_FullWorkflow(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set for full workflow test")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// 3. Get processes by operation
 	operationProcessesResult, err := setup.CallMCPTool("mythic_get_processes_by_operation", map[string]interface{}{

@@ -293,11 +293,11 @@ func TestE2E_Responses_GetLatestResponses(t *testing.T) {
 	me, err := setup.MythicClient.GetMe(setup.Ctx)
 	require.NoError(t, err)
 
-	if me.CurrentOperationID == nil {
+	if me.CurrentOperation == nil {
 		t.Skip("No current operation set")
 	}
 
-	operationID := *me.CurrentOperationID
+	operationID := me.CurrentOperation.ID
 
 	// Get latest responses
 	result, err := setup.CallMCPTool("mythic_get_latest_responses", map[string]interface{}{
