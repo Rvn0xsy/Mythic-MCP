@@ -90,12 +90,12 @@ type getCallbackArgs struct {
 
 type updateCallbackArgs struct {
 	CallbackID  int      `json:"callback_id" jsonschema:"Display ID of the callback to update"`
-	Active      *bool    `json:"active,omitempty" jsonschema:"description=Set callback active/inactive status"`
-	Locked      *bool    `json:"locked,omitempty" jsonschema:"description=Lock/unlock callback for tasking"`
-	Description *string  `json:"description,omitempty" jsonschema:"description=Set callback description"`
-	IPs         []string `json:"ips,omitempty" jsonschema:"description=Update IP addresses"`
-	User        *string  `json:"user,omitempty" jsonschema:"description=Update username"`
-	Host        *string  `json:"host,omitempty" jsonschema:"description=Update hostname"`
+	Active      *bool    `json:"active,omitempty" jsonschema:"Set callback active/inactive status"`
+	Locked      *bool    `json:"locked,omitempty" jsonschema:"Lock/unlock callback for tasking"`
+	Description *string  `json:"description,omitempty" jsonschema:"Set callback description"`
+	IPs         []string `json:"ips,omitempty" jsonschema:"Update IP addresses"`
+	User        *string  `json:"user,omitempty" jsonschema:"Update username"`
+	Host        *string  `json:"host,omitempty" jsonschema:"Update hostname"`
 }
 
 type deleteCallbackArgs struct {

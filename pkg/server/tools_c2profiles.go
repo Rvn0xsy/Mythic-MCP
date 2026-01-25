@@ -82,9 +82,9 @@ type getC2ProfileArgs struct {
 
 type createC2InstanceArgs struct {
 	Name        string                 `json:"name" jsonschema:"Name for the C2 profile instance"`
-	Description string                 `json:"description,omitempty" jsonschema:"description=Description of the C2 instance"`
-	Parameters  map[string]interface{} `json:"parameters,omitempty" jsonschema:"description=C2 profile parameters configuration (key-value pairs)"`
-	OperationID int                    `json:"operation_id,omitempty" jsonschema:"description=Operation ID for the C2 instance"`
+	Description string                 `json:"description,omitempty" jsonschema:"Description of the C2 instance"`
+	Parameters  map[string]interface{} `json:"parameters,omitempty" jsonschema:"C2 profile parameters configuration (key-value pairs)"`
+	OperationID int                    `json:"operation_id,omitempty" jsonschema:"Operation ID for the C2 instance"`
 }
 
 type importC2InstanceArgs struct {

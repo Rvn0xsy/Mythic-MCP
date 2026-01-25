@@ -63,7 +63,7 @@ func (s *Server) registerFilesTools() {
 // Tool argument types for file tools
 
 type getFilesArgs struct {
-	Limit int `json:"limit,omitempty" jsonschema:"description=Maximum number of files to return (default 100)"`
+	Limit int `json:"limit,omitempty" jsonschema:"Maximum number of files to return (default 100)"`
 }
 
 type getFileArgs struct {
@@ -71,7 +71,7 @@ type getFileArgs struct {
 }
 
 type getDownloadedFilesArgs struct {
-	Limit int `json:"limit,omitempty" jsonschema:"description=Maximum number of files to return (default 100)"`
+	Limit int `json:"limit,omitempty" jsonschema:"Maximum number of files to return (default 100)"`
 }
 
 type uploadFileArgs struct {

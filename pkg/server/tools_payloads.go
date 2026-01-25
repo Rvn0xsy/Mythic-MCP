@@ -97,22 +97,22 @@ type getPayloadTypesArgs struct{}
 
 type createPayloadArgs struct {
 	PayloadType     string                   `json:"payload_type" jsonschema:"Payload type name (agent type)"`
-	Description     string                   `json:"description,omitempty" jsonschema:"description=Description of the payload"`
-	Tag             string                   `json:"tag,omitempty" jsonschema:"description=Tag for the payload"`
-	Filename        string                   `json:"filename,omitempty" jsonschema:"description=Filename for the payload"`
-	OS              string                   `json:"os,omitempty" jsonschema:"description=Operating system for the payload"`
-	SelectedOS      string                   `json:"selected_os,omitempty" jsonschema:"description=Selected OS variant"`
-	Commands        []string                 `json:"commands,omitempty" jsonschema:"description=List of command names to include"`
-	C2Profiles      []map[string]interface{} `json:"c2_profiles,omitempty" jsonschema:"description=C2 profile configurations (array of {name, parameters})"`
-	BuildParameters map[string]interface{}   `json:"build_parameters,omitempty" jsonschema:"description=Build parameter key-value pairs"`
-	WrapperPayload  string                   `json:"wrapper_payload,omitempty" jsonschema:"description=UUID of payload to wrap"`
+	Description     string                   `json:"description,omitempty" jsonschema:"Description of the payload"`
+	Tag             string                   `json:"tag,omitempty" jsonschema:"Tag for the payload"`
+	Filename        string                   `json:"filename,omitempty" jsonschema:"Filename for the payload"`
+	OS              string                   `json:"os,omitempty" jsonschema:"Operating system for the payload"`
+	SelectedOS      string                   `json:"selected_os,omitempty" jsonschema:"Selected OS variant"`
+	Commands        []string                 `json:"commands,omitempty" jsonschema:"List of command names to include"`
+	C2Profiles      []map[string]interface{} `json:"c2_profiles,omitempty" jsonschema:"C2 profile configurations (array of {name, parameters})"`
+	BuildParameters map[string]interface{}   `json:"build_parameters,omitempty" jsonschema:"Build parameter key-value pairs"`
+	WrapperPayload  string                   `json:"wrapper_payload,omitempty" jsonschema:"UUID of payload to wrap"`
 }
 
 type updatePayloadArgs struct {
 	PayloadUUID   string  `json:"payload_uuid" jsonschema:"UUID of the payload to update"`
-	Description   *string `json:"description,omitempty" jsonschema:"description=Update payload description"`
-	CallbackAlert *bool   `json:"callback_alert,omitempty" jsonschema:"description=Update callback alert setting"`
-	Deleted       *bool   `json:"deleted,omitempty" jsonschema:"description=Mark payload as deleted"`
+	Description   *string `json:"description,omitempty" jsonschema:"Update payload description"`
+	CallbackAlert *bool   `json:"callback_alert,omitempty" jsonschema:"Update callback alert setting"`
+	Deleted       *bool   `json:"deleted,omitempty" jsonschema:"Mark payload as deleted"`
 }
 
 type deletePayloadArgs struct {
@@ -137,7 +137,7 @@ type getPayloadOnHostArgs struct {
 
 type waitForPayloadArgs struct {
 	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to wait for"`
-	Timeout     int    `json:"timeout,omitempty" jsonschema:"description=Timeout in seconds (default 60)"`
+	Timeout     int    `json:"timeout,omitempty" jsonschema:"Timeout in seconds (default 60)"`
 }
 
 type downloadPayloadArgs struct {

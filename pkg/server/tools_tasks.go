@@ -144,18 +144,18 @@ type updateTaskArgs struct {
 
 type getCallbackTasksArgs struct {
 	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
-	Limit      int `json:"limit,omitempty" jsonschema:"description=Maximum number of tasks to return (default 100)"`
+	Limit      int `json:"limit,omitempty" jsonschema:"Maximum number of tasks to return (default 100)"`
 }
 
 type getTasksByStatusArgs struct {
 	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback"`
 	Status     string `json:"status" jsonschema:"Task status to filter by (submitted, processing, completed, error, etc.)"`
-	Limit      int    `json:"limit,omitempty" jsonschema:"description=Maximum number of tasks to return (default 100)"`
+	Limit      int    `json:"limit,omitempty" jsonschema:"Maximum number of tasks to return (default 100)"`
 }
 
 type waitForTaskArgs struct {
 	TaskID  int `json:"task_id" jsonschema:"Display ID of the task to wait for"`
-	Timeout int `json:"timeout,omitempty" jsonschema:"description=Timeout in seconds (default 60)"`
+	Timeout int `json:"timeout,omitempty" jsonschema:"Timeout in seconds (default 60)"`
 }
 
 type getTaskOutputArgs struct {
@@ -185,7 +185,7 @@ type getTaskResponsesArgs struct {
 
 type getCallbackResponsesArgs struct {
 	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
-	Limit      int `json:"limit,omitempty" jsonschema:"description=Maximum number of responses to return (default 100)"`
+	Limit      int `json:"limit,omitempty" jsonschema:"Maximum number of responses to return (default 100)"`
 }
 
 type getResponseArgs struct {
@@ -194,12 +194,12 @@ type getResponseArgs struct {
 
 type getLatestResponsesArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
-	Limit       int `json:"limit,omitempty" jsonschema:"description=Maximum number of responses to return (default 50)"`
+	Limit       int `json:"limit,omitempty" jsonschema:"Maximum number of responses to return (default 50)"`
 }
 
 type searchResponsesArgs struct {
 	SearchTerm string `json:"search_term" jsonschema:"Text to search for in response output"`
-	Limit      int    `json:"limit,omitempty" jsonschema:"description=Maximum number of responses to return (default 50)"`
+	Limit      int    `json:"limit,omitempty" jsonschema:"Maximum number of responses to return (default 50)"`
 }
 
 type getResponseStatisticsArgs struct {

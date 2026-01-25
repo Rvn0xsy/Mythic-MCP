@@ -88,20 +88,20 @@ type getOperationArgs struct {
 
 type createOperationArgs struct {
 	Name    string  `json:"name" jsonschema:"Name of the new operation"`
-	Webhook *string `json:"webhook,omitempty" jsonschema:"description=Webhook URL for notifications"`
-	Channel *string `json:"channel,omitempty" jsonschema:"description=Slack/Discord channel for notifications"`
-	AdminID *int    `json:"admin_id,omitempty" jsonschema:"description=Operator ID to set as admin"`
+	Webhook *string `json:"webhook,omitempty" jsonschema:"Webhook URL for notifications"`
+	Channel *string `json:"channel,omitempty" jsonschema:"Slack/Discord channel for notifications"`
+	AdminID *int    `json:"admin_id,omitempty" jsonschema:"Operator ID to set as admin"`
 }
 
 type updateOperationArgs struct {
 	OperationID int     `json:"operation_id" jsonschema:"ID of the operation to update"`
-	Name        *string `json:"name,omitempty" jsonschema:"description=New name for the operation"`
-	Webhook     *string `json:"webhook,omitempty" jsonschema:"description=Webhook URL for notifications"`
-	Channel     *string `json:"channel,omitempty" jsonschema:"description=Slack/Discord channel"`
-	Complete    *bool   `json:"complete,omitempty" jsonschema:"description=Mark operation as complete"`
-	AdminID     *int    `json:"admin_id,omitempty" jsonschema:"description=New admin operator ID"`
-	BannerText  *string `json:"banner_text,omitempty" jsonschema:"description=Banner text for operation"`
-	BannerColor *string `json:"banner_color,omitempty" jsonschema:"description=Banner color (hex code)"`
+	Name        *string `json:"name,omitempty" jsonschema:"New name for the operation"`
+	Webhook     *string `json:"webhook,omitempty" jsonschema:"Webhook URL for notifications"`
+	Channel     *string `json:"channel,omitempty" jsonschema:"Slack/Discord channel"`
+	Complete    *bool   `json:"complete,omitempty" jsonschema:"Mark operation as complete"`
+	AdminID     *int    `json:"admin_id,omitempty" jsonschema:"New admin operator ID"`
+	BannerText  *string `json:"banner_text,omitempty" jsonschema:"Banner text for operation"`
+	BannerColor *string `json:"banner_color,omitempty" jsonschema:"Banner color (hex code)"`
 }
 
 type setCurrentOperationArgs struct {
@@ -117,13 +117,13 @@ type getOperationOperatorsArgs struct {
 type createEventLogArgs struct {
 	OperationID int     `json:"operation_id" jsonschema:"ID of the operation"`
 	Message     string  `json:"message" jsonschema:"Event log message"`
-	Level       *string `json:"level,omitempty" jsonschema:"description=Log level (info/warning/error)"`
-	Source      *string `json:"source,omitempty" jsonschema:"description=Source of the event"`
+	Level       *string `json:"level,omitempty" jsonschema:"Log level (info/warning/error)"`
+	Source      *string `json:"source,omitempty" jsonschema:"Source of the event"`
 }
 
 type getEventLogArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
-	Limit       int `json:"limit,omitempty" jsonschema:"description=Maximum number of log entries to return (default 100)"`
+	Limit       int `json:"limit,omitempty" jsonschema:"Maximum number of log entries to return (default 100)"`
 }
 
 type getGlobalSettingsArgs struct{}

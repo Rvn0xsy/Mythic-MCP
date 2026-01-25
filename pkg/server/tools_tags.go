@@ -92,16 +92,16 @@ type getTagTypeArgs struct {
 
 type createTagTypeArgs struct {
 	Name        string  `json:"name" jsonschema:"Name of the tag type"`
-	Description *string `json:"description,omitempty" jsonschema:"description=Description of the tag type"`
-	Color       *string `json:"color,omitempty" jsonschema:"description=Hex color code (e.g. #FF5733)"`
+	Description *string `json:"description,omitempty" jsonschema:"Description of the tag type"`
+	Color       *string `json:"color,omitempty" jsonschema:"Hex color code (e.g. #FF5733)"`
 }
 
 type updateTagTypeArgs struct {
 	TagTypeID   int     `json:"tag_type_id" jsonschema:"ID of the tag type to update"`
-	Name        *string `json:"name,omitempty" jsonschema:"description=New name for the tag type"`
-	Description *string `json:"description,omitempty" jsonschema:"description=New description"`
-	Color       *string `json:"color,omitempty" jsonschema:"description=New hex color code"`
-	Deleted     *bool   `json:"deleted,omitempty" jsonschema:"description=Mark as deleted"`
+	Name        *string `json:"name,omitempty" jsonschema:"New name for the tag type"`
+	Description *string `json:"description,omitempty" jsonschema:"New description"`
+	Color       *string `json:"color,omitempty" jsonschema:"New hex color code"`
+	Deleted     *bool   `json:"deleted,omitempty" jsonschema:"Mark as deleted"`
 }
 
 type deleteTagTypeArgs struct {

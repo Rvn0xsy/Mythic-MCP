@@ -114,19 +114,19 @@ type getOperationCredentialsArgs struct {
 type createCredentialArgs struct {
 	Type       string  `json:"type" jsonschema:"Credential type (plaintext/hash/key/ticket/etc.)"`
 	Account    string  `json:"account" jsonschema:"Account/username"`
-	Realm      *string `json:"realm,omitempty" jsonschema:"description=Domain/realm"`
+	Realm      *string `json:"realm,omitempty" jsonschema:"Domain/realm"`
 	Credential string  `json:"credential" jsonschema:"The actual credential (password/hash/key)"`
-	Comment    *string `json:"comment,omitempty" jsonschema:"description=Additional notes about the credential"`
-	TaskID     *int    `json:"task_id,omitempty" jsonschema:"description=Task ID that discovered this credential"`
+	Comment    *string `json:"comment,omitempty" jsonschema:"Additional notes about the credential"`
+	TaskID     *int    `json:"task_id,omitempty" jsonschema:"Task ID that discovered this credential"`
 }
 
 type updateCredentialArgs struct {
 	CredentialID int     `json:"credential_id" jsonschema:"ID of the credential to update"`
-	Type         *string `json:"type,omitempty" jsonschema:"description=New credential type"`
-	Account      *string `json:"account,omitempty" jsonschema:"description=New account/username"`
-	Realm        *string `json:"realm,omitempty" jsonschema:"description=New domain/realm"`
-	Credential   *string `json:"credential,omitempty" jsonschema:"description=New credential value"`
-	Comment      *string `json:"comment,omitempty" jsonschema:"description=New comment"`
+	Type         *string `json:"type,omitempty" jsonschema:"New credential type"`
+	Account      *string `json:"account,omitempty" jsonschema:"New account/username"`
+	Realm        *string `json:"realm,omitempty" jsonschema:"New domain/realm"`
+	Credential   *string `json:"credential,omitempty" jsonschema:"New credential value"`
+	Comment      *string `json:"comment,omitempty" jsonschema:"New comment"`
 }
 
 type deleteCredentialArgs struct {
@@ -155,14 +155,14 @@ type getArtifactsByTypeArgs struct {
 
 type createArtifactArgs struct {
 	Artifact     string  `json:"artifact" jsonschema:"The artifact (file path/registry key/etc.)"`
-	BaseArtifact *string `json:"base_artifact,omitempty" jsonschema:"description=Base artifact for pattern matching"`
-	Host         *string `json:"host,omitempty" jsonschema:"description=Hostname where artifact was observed"`
-	TaskID       *int    `json:"task_id,omitempty" jsonschema:"description=Task ID that created this artifact"`
+	BaseArtifact *string `json:"base_artifact,omitempty" jsonschema:"Base artifact for pattern matching"`
+	Host         *string `json:"host,omitempty" jsonschema:"Hostname where artifact was observed"`
+	TaskID       *int    `json:"task_id,omitempty" jsonschema:"Task ID that created this artifact"`
 }
 
 type updateArtifactArgs struct {
 	ArtifactID int     `json:"artifact_id" jsonschema:"ID of the artifact to update"`
-	Host       *string `json:"host,omitempty" jsonschema:"description=New hostname"`
+	Host       *string `json:"host,omitempty" jsonschema:"New hostname"`
 }
 
 type deleteArtifactArgs struct {

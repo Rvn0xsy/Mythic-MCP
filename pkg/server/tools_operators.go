@@ -95,22 +95,22 @@ type getOperatorArgs struct {
 type createOperatorArgs struct {
 	Username string  `json:"username" jsonschema:"Username for the new operator"`
 	Password string  `json:"password" jsonschema:"Password (minimum 12 characters)"`
-	Email    *string `json:"email,omitempty" jsonschema:"description=Email address"`
-	Bot      *bool   `json:"bot,omitempty" jsonschema:"description=Create as bot account"`
+	Email    *string `json:"email,omitempty" jsonschema:"Email address"`
+	Bot      *bool   `json:"bot,omitempty" jsonschema:"Create as bot account"`
 }
 
 type updateOperatorStatusArgs struct {
 	OperatorID int   `json:"operator_id" jsonschema:"ID of the operator to update"`
-	Active     *bool `json:"active,omitempty" jsonschema:"description=Set operator active/inactive"`
-	Admin      *bool `json:"admin,omitempty" jsonschema:"description=Grant/revoke admin privileges"`
-	Deleted    *bool `json:"deleted,omitempty" jsonschema:"description=Mark operator as deleted"`
+	Active     *bool `json:"active,omitempty" jsonschema:"Set operator active/inactive"`
+	Admin      *bool `json:"admin,omitempty" jsonschema:"Grant/revoke admin privileges"`
+	Deleted    *bool `json:"deleted,omitempty" jsonschema:"Mark operator as deleted"`
 }
 
 type updatePasswordEmailArgs struct {
 	OperatorID  int     `json:"operator_id" jsonschema:"ID of the operator"`
 	OldPassword string  `json:"old_password" jsonschema:"Current password"`
-	NewPassword *string `json:"new_password,omitempty" jsonschema:"description=New password (min 12 chars)"`
-	Email       *string `json:"email,omitempty" jsonschema:"description=New email address"`
+	NewPassword *string `json:"new_password,omitempty" jsonschema:"New password (min 12 chars)"`
+	Email       *string `json:"email,omitempty" jsonschema:"New email address"`
 }
 
 type getOperatorPreferencesArgs struct {
@@ -134,19 +134,19 @@ type updateOperatorSecretsArgs struct {
 type getInviteLinksArgs struct{}
 
 type createInviteLinkArgs struct {
-	OperationID   *int    `json:"operation_id,omitempty" jsonschema:"description=Operation to associate link with"`
-	OperationRole *string `json:"operation_role,omitempty" jsonschema:"description=Role for new users (operator/spectator)"`
-	MaxUses       *int    `json:"max_uses,omitempty" jsonschema:"description=Maximum number of uses"`
-	Name          *string `json:"name,omitempty" jsonschema:"description=Human-readable name for the link"`
-	ShortCode     *string `json:"short_code,omitempty" jsonschema:"description=Custom short code"`
+	OperationID   *int    `json:"operation_id,omitempty" jsonschema:"Operation to associate link with"`
+	OperationRole *string `json:"operation_role,omitempty" jsonschema:"Role for new users (operator/spectator)"`
+	MaxUses       *int    `json:"max_uses,omitempty" jsonschema:"Maximum number of uses"`
+	Name          *string `json:"name,omitempty" jsonschema:"Human-readable name for the link"`
+	ShortCode     *string `json:"short_code,omitempty" jsonschema:"Custom short code"`
 }
 
 type updateOperatorOperationArgs struct {
 	OperationID        int    `json:"operation_id" jsonschema:"Operation to modify"`
-	AddUsers           *[]int `json:"add_users,omitempty" jsonschema:"description=Operator IDs to add with full access"`
-	RemoveUsers        *[]int `json:"remove_users,omitempty" jsonschema:"description=Operator IDs to remove"`
-	ViewModeOperators  *[]int `json:"view_mode_operators,omitempty" jsonschema:"description=Operator IDs to set as view-only"`
-	ViewModeSpectators *[]int `json:"view_mode_spectators,omitempty" jsonschema:"description=Operator IDs to set as spectators"`
+	AddUsers           *[]int `json:"add_users,omitempty" jsonschema:"Operator IDs to add with full access"`
+	RemoveUsers        *[]int `json:"remove_users,omitempty" jsonschema:"Operator IDs to remove"`
+	ViewModeOperators  *[]int `json:"view_mode_operators,omitempty" jsonschema:"Operator IDs to set as view-only"`
+	ViewModeSpectators *[]int `json:"view_mode_spectators,omitempty" jsonschema:"Operator IDs to set as spectators"`
 }
 
 // Tool handlers
