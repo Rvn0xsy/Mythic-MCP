@@ -104,16 +104,14 @@ func (s *Server) registerTools() error {
 
 	// Phase 3 COMPLETE! ✅
 	// Total Phase 3 tools: 54 tools implemented
-	// - Callbacks: 11 tools
-	// - Tasks & Responses: 18 tools
-	// - Payloads: 12 tools
-	// - C2 Profiles: 10 tools
-	// - Commands: 3 tools
+
+	// Phase 4: Advanced Features - MITRE ATT&CK, Processes, Hosts, etc.
+	s.registerAttackTools()
 
 	// Future phases will add more tool categories:
-	// - MITRE ATT&CK tools (Phase 4)
-	// - Processes, Hosts, Screenshots, etc. (Phase 4)
-	// - Advanced features (Phase 5)
+	// - Processes, Hosts, Screenshots, Keylogs (Phase 4)
+	// - Tokens, Browser Scripts, File Browser (Phase 4)
+	// - Eventing, Alerts, Containers, etc. (Phase 5)
 
 	return nil
 }
