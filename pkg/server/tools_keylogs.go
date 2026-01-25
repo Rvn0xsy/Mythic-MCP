@@ -34,11 +34,11 @@ func (s *Server) registerKeylogsTools() {
 type getKeylogsArgs struct{}
 
 type getKeylogsByOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 type getKeylogsByCallbackArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 }
 
 // Tool handlers

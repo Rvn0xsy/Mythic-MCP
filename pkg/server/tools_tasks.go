@@ -128,82 +128,82 @@ func (s *Server) registerTasksTools() {
 // Tool argument types for task tools
 
 type issueTaskArgs struct {
-	CallbackID int    `json:"callback_id" jsonschema:"required,description=Display ID of the callback to task"`
-	Command    string `json:"command" jsonschema:"required,description=Command name to execute"`
-	Params     string `json:"params" jsonschema:"required,description=JSON string of command parameters"`
+	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
+	Command    string `json:"command" jsonschema:"Command name to execute"`
+	Params     string `json:"params" jsonschema:"JSON string of command parameters"`
 }
 
 type getTaskArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Display ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task"`
 }
 
 type updateTaskArgs struct {
-	TaskID  int                    `json:"task_id" jsonschema:"required,description=Display ID of the task to update"`
-	Updates map[string]interface{} `json:"updates" jsonschema:"required,description=Map of fields to update (comment, completed, etc.)"`
+	TaskID  int                    `json:"task_id" jsonschema:"Display ID of the task to update"`
+	Updates map[string]interface{} `json:"updates" jsonschema:"Map of fields to update (comment, completed, etc.)"`
 }
 
 type getCallbackTasksArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 	Limit      int `json:"limit,omitempty" jsonschema:"description=Maximum number of tasks to return (default 100)"`
 }
 
 type getTasksByStatusArgs struct {
-	CallbackID int    `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
-	Status     string `json:"status" jsonschema:"required,description=Task status to filter by (submitted, processing, completed, error, etc.)"`
+	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback"`
+	Status     string `json:"status" jsonschema:"Task status to filter by (submitted, processing, completed, error, etc.)"`
 	Limit      int    `json:"limit,omitempty" jsonschema:"description=Maximum number of tasks to return (default 100)"`
 }
 
 type waitForTaskArgs struct {
-	TaskID  int `json:"task_id" jsonschema:"required,description=Display ID of the task to wait for"`
+	TaskID  int `json:"task_id" jsonschema:"Display ID of the task to wait for"`
 	Timeout int `json:"timeout,omitempty" jsonschema:"description=Timeout in seconds (default 60)"`
 }
 
 type getTaskOutputArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Display ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task"`
 }
 
 type reissueTaskArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Display ID of the task to reissue"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task to reissue"`
 }
 
 type getTaskArtifactsArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Display ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task"`
 }
 
 type requestOpsecBypassArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Display ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task"`
 }
 
 type addMitreAttackToTaskArgs struct {
-	TaskID      int    `json:"task_id" jsonschema:"required,description=Display ID of the task"`
-	TechniqueID string `json:"technique_id" jsonschema:"required,description=MITRE ATT&CK technique ID (e.g., T1055)"`
+	TaskID      int    `json:"task_id" jsonschema:"Display ID of the task"`
+	TechniqueID string `json:"technique_id" jsonschema:"MITRE ATT&CK technique ID (e.g., T1055)"`
 }
 
 type getTaskResponsesArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Display ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task"`
 }
 
 type getCallbackResponsesArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 	Limit      int `json:"limit,omitempty" jsonschema:"description=Maximum number of responses to return (default 100)"`
 }
 
 type getResponseArgs struct {
-	ResponseID int `json:"response_id" jsonschema:"required,description=ID of the response"`
+	ResponseID int `json:"response_id" jsonschema:"ID of the response"`
 }
 
 type getLatestResponsesArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 	Limit       int `json:"limit,omitempty" jsonschema:"description=Maximum number of responses to return (default 50)"`
 }
 
 type searchResponsesArgs struct {
-	SearchTerm string `json:"search_term" jsonschema:"required,description=Text to search for in response output"`
+	SearchTerm string `json:"search_term" jsonschema:"Text to search for in response output"`
 	Limit      int    `json:"limit,omitempty" jsonschema:"description=Maximum number of responses to return (default 50)"`
 }
 
 type getResponseStatisticsArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Task ID to get statistics for"`
+	TaskID int `json:"task_id" jsonschema:"Task ID to get statistics for"`
 }
 
 // Tool handlers for task operations

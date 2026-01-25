@@ -89,46 +89,46 @@ func (s *Server) registerOperatorsTools() {
 type getOperatorsArgs struct{}
 
 type getOperatorArgs struct {
-	OperatorID int `json:"operator_id" jsonschema:"required,description=ID of the operator to retrieve"`
+	OperatorID int `json:"operator_id" jsonschema:"ID of the operator to retrieve"`
 }
 
 type createOperatorArgs struct {
-	Username string  `json:"username" jsonschema:"required,description=Username for the new operator"`
-	Password string  `json:"password" jsonschema:"required,description=Password (minimum 12 characters)"`
+	Username string  `json:"username" jsonschema:"Username for the new operator"`
+	Password string  `json:"password" jsonschema:"Password (minimum 12 characters)"`
 	Email    *string `json:"email,omitempty" jsonschema:"description=Email address"`
 	Bot      *bool   `json:"bot,omitempty" jsonschema:"description=Create as bot account"`
 }
 
 type updateOperatorStatusArgs struct {
-	OperatorID int   `json:"operator_id" jsonschema:"required,description=ID of the operator to update"`
+	OperatorID int   `json:"operator_id" jsonschema:"ID of the operator to update"`
 	Active     *bool `json:"active,omitempty" jsonschema:"description=Set operator active/inactive"`
 	Admin      *bool `json:"admin,omitempty" jsonschema:"description=Grant/revoke admin privileges"`
 	Deleted    *bool `json:"deleted,omitempty" jsonschema:"description=Mark operator as deleted"`
 }
 
 type updatePasswordEmailArgs struct {
-	OperatorID  int     `json:"operator_id" jsonschema:"required,description=ID of the operator"`
-	OldPassword string  `json:"old_password" jsonschema:"required,description=Current password"`
+	OperatorID  int     `json:"operator_id" jsonschema:"ID of the operator"`
+	OldPassword string  `json:"old_password" jsonschema:"Current password"`
 	NewPassword *string `json:"new_password,omitempty" jsonschema:"description=New password (min 12 chars)"`
 	Email       *string `json:"email,omitempty" jsonschema:"description=New email address"`
 }
 
 type getOperatorPreferencesArgs struct {
-	OperatorID int `json:"operator_id" jsonschema:"required,description=ID of the operator"`
+	OperatorID int `json:"operator_id" jsonschema:"ID of the operator"`
 }
 
 type updateOperatorPreferencesArgs struct {
-	OperatorID  int                    `json:"operator_id" jsonschema:"required,description=ID of the operator"`
-	Preferences map[string]interface{} `json:"preferences" jsonschema:"required,description=Preferences to update (key-value pairs)"`
+	OperatorID  int                    `json:"operator_id" jsonschema:"ID of the operator"`
+	Preferences map[string]interface{} `json:"preferences" jsonschema:"Preferences to update (key-value pairs)"`
 }
 
 type getOperatorSecretsArgs struct {
-	OperatorID int `json:"operator_id" jsonschema:"required,description=ID of the operator"`
+	OperatorID int `json:"operator_id" jsonschema:"ID of the operator"`
 }
 
 type updateOperatorSecretsArgs struct {
-	OperatorID int                    `json:"operator_id" jsonschema:"required,description=ID of the operator"`
-	Secrets    map[string]interface{} `json:"secrets" jsonschema:"required,description=Secrets to update (key-value pairs)"`
+	OperatorID int                    `json:"operator_id" jsonschema:"ID of the operator"`
+	Secrets    map[string]interface{} `json:"secrets" jsonschema:"Secrets to update (key-value pairs)"`
 }
 
 type getInviteLinksArgs struct{}
@@ -142,7 +142,7 @@ type createInviteLinkArgs struct {
 }
 
 type updateOperatorOperationArgs struct {
-	OperationID        int    `json:"operation_id" jsonschema:"required,description=Operation to modify"`
+	OperationID        int    `json:"operation_id" jsonschema:"Operation to modify"`
 	AddUsers           *[]int `json:"add_users,omitempty" jsonschema:"description=Operator IDs to add with full access"`
 	RemoveUsers        *[]int `json:"remove_users,omitempty" jsonschema:"description=Operator IDs to remove"`
 	ViewModeOperators  *[]int `json:"view_mode_operators,omitempty" jsonschema:"description=Operator IDs to set as view-only"`

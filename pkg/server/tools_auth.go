@@ -54,8 +54,8 @@ func (s *Server) registerAuthTools() {
 
 // Tool handler types for MCP SDK
 type loginArgs struct {
-	Username string `json:"username" jsonschema:"required,description=Mythic username"`
-	Password string `json:"password" jsonschema:"required,description=Mythic password"`
+	Username string `json:"username" jsonschema:"Mythic username"`
+	Password string `json:"password" jsonschema:"Mythic password"`
 }
 
 type logoutArgs struct{}
@@ -67,7 +67,7 @@ type getCurrentUserArgs struct{}
 type createAPITokenArgs struct{}
 
 type deleteAPITokenArgs struct {
-	TokenID int `json:"token_id" jsonschema:"required,description=ID of the token to delete"`
+	TokenID int `json:"token_id" jsonschema:"ID of the token to delete"`
 }
 
 type refreshTokenArgs struct{}

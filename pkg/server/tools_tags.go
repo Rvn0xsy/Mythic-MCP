@@ -83,21 +83,21 @@ func (s *Server) registerTagsTools() {
 type getTagTypesArgs struct{}
 
 type getTagTypesByOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=Operation ID to filter tag types"`
+	OperationID int `json:"operation_id" jsonschema:"Operation ID to filter tag types"`
 }
 
 type getTagTypeArgs struct {
-	TagTypeID int `json:"tag_type_id" jsonschema:"required,description=ID of the tag type to retrieve"`
+	TagTypeID int `json:"tag_type_id" jsonschema:"ID of the tag type to retrieve"`
 }
 
 type createTagTypeArgs struct {
-	Name        string  `json:"name" jsonschema:"required,description=Name of the tag type"`
+	Name        string  `json:"name" jsonschema:"Name of the tag type"`
 	Description *string `json:"description,omitempty" jsonschema:"description=Description of the tag type"`
 	Color       *string `json:"color,omitempty" jsonschema:"description=Hex color code (e.g. #FF5733)"`
 }
 
 type updateTagTypeArgs struct {
-	TagTypeID   int     `json:"tag_type_id" jsonschema:"required,description=ID of the tag type to update"`
+	TagTypeID   int     `json:"tag_type_id" jsonschema:"ID of the tag type to update"`
 	Name        *string `json:"name,omitempty" jsonschema:"description=New name for the tag type"`
 	Description *string `json:"description,omitempty" jsonschema:"description=New description"`
 	Color       *string `json:"color,omitempty" jsonschema:"description=New hex color code"`
@@ -105,30 +105,30 @@ type updateTagTypeArgs struct {
 }
 
 type deleteTagTypeArgs struct {
-	TagTypeID int `json:"tag_type_id" jsonschema:"required,description=ID of the tag type to delete"`
+	TagTypeID int `json:"tag_type_id" jsonschema:"ID of the tag type to delete"`
 }
 
 type createTagArgs struct {
-	TagTypeID  int    `json:"tag_type_id" jsonschema:"required,description=ID of the tag type to use"`
-	SourceType string `json:"source_type" jsonschema:"required,description=Type of object to tag (task/callback/filemeta/payload/artifact/process/keylog)"`
-	SourceID   int    `json:"source_id" jsonschema:"required,description=ID of the object to tag"`
+	TagTypeID  int    `json:"tag_type_id" jsonschema:"ID of the tag type to use"`
+	SourceType string `json:"source_type" jsonschema:"Type of object to tag (task/callback/filemeta/payload/artifact/process/keylog)"`
+	SourceID   int    `json:"source_id" jsonschema:"ID of the object to tag"`
 }
 
 type getTagArgs struct {
-	TagID int `json:"tag_id" jsonschema:"required,description=ID of the tag to retrieve"`
+	TagID int `json:"tag_id" jsonschema:"ID of the tag to retrieve"`
 }
 
 type getTagsArgs struct {
-	SourceType string `json:"source_type" jsonschema:"required,description=Type of object (task/callback/filemeta/etc.)"`
-	SourceID   int    `json:"source_id" jsonschema:"required,description=ID of the object"`
+	SourceType string `json:"source_type" jsonschema:"Type of object (task/callback/filemeta/etc.)"`
+	SourceID   int    `json:"source_id" jsonschema:"ID of the object"`
 }
 
 type getTagsByOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=Operation ID to get tags for"`
+	OperationID int `json:"operation_id" jsonschema:"Operation ID to get tags for"`
 }
 
 type deleteTagArgs struct {
-	TagID int `json:"tag_id" jsonschema:"required,description=ID of the tag to delete"`
+	TagID int `json:"tag_id" jsonschema:"ID of the tag to delete"`
 }
 
 // Tool handlers

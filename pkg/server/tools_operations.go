@@ -83,18 +83,18 @@ func (s *Server) registerOperationsTools() {
 type getOperationsArgs struct{}
 
 type getOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation to retrieve"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation to retrieve"`
 }
 
 type createOperationArgs struct {
-	Name    string  `json:"name" jsonschema:"required,description=Name of the new operation"`
+	Name    string  `json:"name" jsonschema:"Name of the new operation"`
 	Webhook *string `json:"webhook,omitempty" jsonschema:"description=Webhook URL for notifications"`
 	Channel *string `json:"channel,omitempty" jsonschema:"description=Slack/Discord channel for notifications"`
 	AdminID *int    `json:"admin_id,omitempty" jsonschema:"description=Operator ID to set as admin"`
 }
 
 type updateOperationArgs struct {
-	OperationID int     `json:"operation_id" jsonschema:"required,description=ID of the operation to update"`
+	OperationID int     `json:"operation_id" jsonschema:"ID of the operation to update"`
 	Name        *string `json:"name,omitempty" jsonschema:"description=New name for the operation"`
 	Webhook     *string `json:"webhook,omitempty" jsonschema:"description=Webhook URL for notifications"`
 	Channel     *string `json:"channel,omitempty" jsonschema:"description=Slack/Discord channel"`
@@ -105,31 +105,31 @@ type updateOperationArgs struct {
 }
 
 type setCurrentOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation to set as current"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation to set as current"`
 }
 
 type getCurrentOperationArgs struct{}
 
 type getOperationOperatorsArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 type createEventLogArgs struct {
-	OperationID int     `json:"operation_id" jsonschema:"required,description=ID of the operation"`
-	Message     string  `json:"message" jsonschema:"required,description=Event log message"`
+	OperationID int     `json:"operation_id" jsonschema:"ID of the operation"`
+	Message     string  `json:"message" jsonschema:"Event log message"`
 	Level       *string `json:"level,omitempty" jsonschema:"description=Log level (info/warning/error)"`
 	Source      *string `json:"source,omitempty" jsonschema:"description=Source of the event"`
 }
 
 type getEventLogArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 	Limit       int `json:"limit,omitempty" jsonschema:"description=Maximum number of log entries to return (default 100)"`
 }
 
 type getGlobalSettingsArgs struct{}
 
 type updateGlobalSettingsArgs struct {
-	Settings map[string]interface{} `json:"settings" jsonschema:"required,description=Settings to update (key-value pairs)"`
+	Settings map[string]interface{} `json:"settings" jsonschema:"Settings to update (key-value pairs)"`
 }
 
 // Tool handlers

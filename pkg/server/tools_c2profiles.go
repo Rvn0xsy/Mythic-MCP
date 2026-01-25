@@ -77,45 +77,45 @@ func (s *Server) registerC2ProfilesTools() {
 type getC2ProfilesArgs struct{}
 
 type getC2ProfileArgs struct {
-	ProfileID int `json:"profile_id" jsonschema:"required,description=ID of the C2 profile"`
+	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile"`
 }
 
 type createC2InstanceArgs struct {
-	Name        string                 `json:"name" jsonschema:"required,description=Name for the C2 profile instance"`
+	Name        string                 `json:"name" jsonschema:"Name for the C2 profile instance"`
 	Description string                 `json:"description,omitempty" jsonschema:"description=Description of the C2 instance"`
 	Parameters  map[string]interface{} `json:"parameters,omitempty" jsonschema:"description=C2 profile parameters configuration (key-value pairs)"`
 	OperationID int                    `json:"operation_id,omitempty" jsonschema:"description=Operation ID for the C2 instance"`
 }
 
 type importC2InstanceArgs struct {
-	Name   string `json:"name" jsonschema:"required,description=Name for the imported C2 instance"`
-	Config string `json:"config" jsonschema:"required,description=JSON configuration data to import"`
+	Name   string `json:"name" jsonschema:"Name for the imported C2 instance"`
+	Config string `json:"config" jsonschema:"JSON configuration data to import"`
 }
 
 type startC2ProfileArgs struct {
-	ProfileID int `json:"profile_id" jsonschema:"required,description=ID of the C2 profile to start"`
+	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile to start"`
 }
 
 type stopC2ProfileArgs struct {
-	ProfileID int `json:"profile_id" jsonschema:"required,description=ID of the C2 profile to stop"`
+	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile to stop"`
 }
 
 type getC2ProfileOutputArgs struct {
-	ProfileID int `json:"profile_id" jsonschema:"required,description=ID of the C2 profile"`
+	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile"`
 }
 
 type c2HostFileArgs struct {
-	ProfileID int    `json:"profile_id" jsonschema:"required,description=ID of the C2 profile"`
-	FileUUID  string `json:"file_uuid" jsonschema:"required,description=UUID of the file to host"`
+	ProfileID int    `json:"profile_id" jsonschema:"ID of the C2 profile"`
+	FileUUID  string `json:"file_uuid" jsonschema:"UUID of the file to host"`
 }
 
 type c2SampleMessageArgs struct {
-	ProfileID   int    `json:"profile_id" jsonschema:"required,description=ID of the C2 profile"`
-	MessageType string `json:"message_type" jsonschema:"required,description=Type of message (e.g., checkin, get_tasking, post_response)"`
+	ProfileID   int    `json:"profile_id" jsonschema:"ID of the C2 profile"`
+	MessageType string `json:"message_type" jsonschema:"Type of message (e.g., checkin, get_tasking, post_response)"`
 }
 
 type c2GetIOCArgs struct {
-	ProfileID int `json:"profile_id" jsonschema:"required,description=ID of the C2 profile"`
+	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile"`
 }
 
 // Tool handlers

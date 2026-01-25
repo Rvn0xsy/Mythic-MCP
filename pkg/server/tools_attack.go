@@ -52,23 +52,23 @@ func (s *Server) registerAttackTools() {
 type getAttackTechniquesArgs struct{}
 
 type getAttackTechniqueByIDArgs struct {
-	AttackID int `json:"attack_id" jsonschema:"required,description=Internal ID of the MITRE ATT&CK technique"`
+	AttackID int `json:"attack_id" jsonschema:"Internal ID of the MITRE ATT&CK technique"`
 }
 
 type getAttackTechniqueByTNumArgs struct {
-	TNumber string `json:"t_number" jsonschema:"required,description=MITRE ATT&CK technique T-number (e.g., T1055)"`
+	TNumber string `json:"t_number" jsonschema:"MITRE ATT&CK technique T-number (e.g., T1055)"`
 }
 
 type getAttackByTaskArgs struct {
-	TaskID int `json:"task_id" jsonschema:"required,description=Internal ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Internal ID of the task"`
 }
 
 type getAttackByCommandArgs struct {
-	CommandID int `json:"command_id" jsonschema:"required,description=Internal ID of the command"`
+	CommandID int `json:"command_id" jsonschema:"Internal ID of the command"`
 }
 
 type getAttacksByOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 // Tool handlers

@@ -90,13 +90,13 @@ func (s *Server) registerPayloadsTools() {
 type getPayloadsArgs struct{}
 
 type getPayloadArgs struct {
-	PayloadUUID string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to retrieve"`
+	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to retrieve"`
 }
 
 type getPayloadTypesArgs struct{}
 
 type createPayloadArgs struct {
-	PayloadType     string                   `json:"payload_type" jsonschema:"required,description=Payload type name (agent type)"`
+	PayloadType     string                   `json:"payload_type" jsonschema:"Payload type name (agent type)"`
 	Description     string                   `json:"description,omitempty" jsonschema:"description=Description of the payload"`
 	Tag             string                   `json:"tag,omitempty" jsonschema:"description=Tag for the payload"`
 	Filename        string                   `json:"filename,omitempty" jsonschema:"description=Filename for the payload"`
@@ -109,39 +109,39 @@ type createPayloadArgs struct {
 }
 
 type updatePayloadArgs struct {
-	PayloadUUID   string  `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to update"`
+	PayloadUUID   string  `json:"payload_uuid" jsonschema:"UUID of the payload to update"`
 	Description   *string `json:"description,omitempty" jsonschema:"description=Update payload description"`
 	CallbackAlert *bool   `json:"callback_alert,omitempty" jsonschema:"description=Update callback alert setting"`
 	Deleted       *bool   `json:"deleted,omitempty" jsonschema:"description=Mark payload as deleted"`
 }
 
 type deletePayloadArgs struct {
-	PayloadUUID string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to delete"`
+	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to delete"`
 }
 
 type rebuildPayloadArgs struct {
-	PayloadUUID string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to rebuild"`
+	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to rebuild"`
 }
 
 type exportPayloadConfigArgs struct {
-	PayloadUUID string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to export"`
+	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to export"`
 }
 
 type getPayloadCommandsArgs struct {
-	PayloadID int `json:"payload_id" jsonschema:"required,description=ID of the payload"`
+	PayloadID int `json:"payload_id" jsonschema:"ID of the payload"`
 }
 
 type getPayloadOnHostArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 type waitForPayloadArgs struct {
-	PayloadUUID string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to wait for"`
+	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to wait for"`
 	Timeout     int    `json:"timeout,omitempty" jsonschema:"description=Timeout in seconds (default 60)"`
 }
 
 type downloadPayloadArgs struct {
-	PayloadUUID string `json:"payload_uuid" jsonschema:"required,description=UUID of the payload to download"`
+	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to download"`
 }
 
 // Tool handlers

@@ -46,19 +46,19 @@ func (s *Server) registerProcessesTools() {
 type getProcessesArgs struct{}
 
 type getProcessesByOperationArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 type getProcessesByCallbackArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 }
 
 type getProcessTreeArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 }
 
 type getProcessesByHostArgs struct {
-	HostID int `json:"host_id" jsonschema:"required,description=ID of the host"`
+	HostID int `json:"host_id" jsonschema:"ID of the host"`
 }
 
 // Tool handlers

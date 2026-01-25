@@ -104,24 +104,24 @@ func (s *Server) registerArtifactsTools() {
 type getCredentialsArgs struct{}
 
 type getCredentialArgs struct {
-	CredentialID int `json:"credential_id" jsonschema:"required,description=ID of the credential to retrieve"`
+	CredentialID int `json:"credential_id" jsonschema:"ID of the credential to retrieve"`
 }
 
 type getOperationCredentialsArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=Operation ID to filter credentials"`
+	OperationID int `json:"operation_id" jsonschema:"Operation ID to filter credentials"`
 }
 
 type createCredentialArgs struct {
-	Type       string  `json:"type" jsonschema:"required,description=Credential type (plaintext/hash/key/ticket/etc.)"`
-	Account    string  `json:"account" jsonschema:"required,description=Account/username"`
+	Type       string  `json:"type" jsonschema:"Credential type (plaintext/hash/key/ticket/etc.)"`
+	Account    string  `json:"account" jsonschema:"Account/username"`
 	Realm      *string `json:"realm,omitempty" jsonschema:"description=Domain/realm"`
-	Credential string  `json:"credential" jsonschema:"required,description=The actual credential (password/hash/key)"`
+	Credential string  `json:"credential" jsonschema:"The actual credential (password/hash/key)"`
 	Comment    *string `json:"comment,omitempty" jsonschema:"description=Additional notes about the credential"`
 	TaskID     *int    `json:"task_id,omitempty" jsonschema:"description=Task ID that discovered this credential"`
 }
 
 type updateCredentialArgs struct {
-	CredentialID int     `json:"credential_id" jsonschema:"required,description=ID of the credential to update"`
+	CredentialID int     `json:"credential_id" jsonschema:"ID of the credential to update"`
 	Type         *string `json:"type,omitempty" jsonschema:"description=New credential type"`
 	Account      *string `json:"account,omitempty" jsonschema:"description=New account/username"`
 	Realm        *string `json:"realm,omitempty" jsonschema:"description=New domain/realm"`
@@ -130,7 +130,7 @@ type updateCredentialArgs struct {
 }
 
 type deleteCredentialArgs struct {
-	CredentialID int `json:"credential_id" jsonschema:"required,description=ID of the credential to delete"`
+	CredentialID int `json:"credential_id" jsonschema:"ID of the credential to delete"`
 }
 
 // Tool argument types for artifacts tools
@@ -138,35 +138,35 @@ type deleteCredentialArgs struct {
 type getArtifactsArgs struct{}
 
 type getArtifactArgs struct {
-	ArtifactID int `json:"artifact_id" jsonschema:"required,description=ID of the artifact to retrieve"`
+	ArtifactID int `json:"artifact_id" jsonschema:"ID of the artifact to retrieve"`
 }
 
 type getOperationArtifactsArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=Operation ID to filter artifacts"`
+	OperationID int `json:"operation_id" jsonschema:"Operation ID to filter artifacts"`
 }
 
 type getHostArtifactsArgs struct {
-	Host string `json:"host" jsonschema:"required,description=Hostname to filter artifacts"`
+	Host string `json:"host" jsonschema:"Hostname to filter artifacts"`
 }
 
 type getArtifactsByTypeArgs struct {
-	ArtifactType string `json:"artifact_type" jsonschema:"required,description=Artifact type to filter (File Write/Registry Write/etc.)"`
+	ArtifactType string `json:"artifact_type" jsonschema:"Artifact type to filter (File Write/Registry Write/etc.)"`
 }
 
 type createArtifactArgs struct {
-	Artifact     string  `json:"artifact" jsonschema:"required,description=The artifact (file path/registry key/etc.)"`
+	Artifact     string  `json:"artifact" jsonschema:"The artifact (file path/registry key/etc.)"`
 	BaseArtifact *string `json:"base_artifact,omitempty" jsonschema:"description=Base artifact for pattern matching"`
 	Host         *string `json:"host,omitempty" jsonschema:"description=Hostname where artifact was observed"`
 	TaskID       *int    `json:"task_id,omitempty" jsonschema:"description=Task ID that created this artifact"`
 }
 
 type updateArtifactArgs struct {
-	ArtifactID int     `json:"artifact_id" jsonschema:"required,description=ID of the artifact to update"`
+	ArtifactID int     `json:"artifact_id" jsonschema:"ID of the artifact to update"`
 	Host       *string `json:"host,omitempty" jsonschema:"description=New hostname"`
 }
 
 type deleteArtifactArgs struct {
-	ArtifactID int `json:"artifact_id" jsonschema:"required,description=ID of the artifact to delete"`
+	ArtifactID int `json:"artifact_id" jsonschema:"ID of the artifact to delete"`
 }
 
 // Tool handlers for credentials

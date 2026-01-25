@@ -85,11 +85,11 @@ type getAllCallbacksArgs struct{}
 type getActiveCallbacksArgs struct{}
 
 type getCallbackArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback to retrieve"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback to retrieve"`
 }
 
 type updateCallbackArgs struct {
-	CallbackID  int      `json:"callback_id" jsonschema:"required,description=Display ID of the callback to update"`
+	CallbackID  int      `json:"callback_id" jsonschema:"Display ID of the callback to update"`
 	Active      *bool    `json:"active,omitempty" jsonschema:"description=Set callback active/inactive status"`
 	Locked      *bool    `json:"locked,omitempty" jsonschema:"description=Lock/unlock callback for tasking"`
 	Description *string  `json:"description,omitempty" jsonschema:"description=Set callback description"`
@@ -99,33 +99,33 @@ type updateCallbackArgs struct {
 }
 
 type deleteCallbackArgs struct {
-	CallbackIDs []int `json:"callback_ids" jsonschema:"required,description=Array of callback IDs to delete"`
+	CallbackIDs []int `json:"callback_ids" jsonschema:"Array of callback IDs to delete"`
 }
 
 type getLoadedCommandsArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 }
 
 type exportCallbackConfigArgs struct {
-	AgentCallbackID string `json:"agent_callback_id" jsonschema:"required,description=Agent callback UUID to export"`
+	AgentCallbackID string `json:"agent_callback_id" jsonschema:"Agent callback UUID to export"`
 }
 
 type importCallbackConfigArgs struct {
-	Config string `json:"config" jsonschema:"required,description=JSON configuration string to import"`
+	Config string `json:"config" jsonschema:"JSON configuration string to import"`
 }
 
 type getCallbackTokensArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
 }
 
 type addCallbackEdgeArgs struct {
-	SourceID      int    `json:"source_id" jsonschema:"required,description=Source callback ID"`
-	DestinationID int    `json:"destination_id" jsonschema:"required,description=Destination callback ID"`
-	C2ProfileName string `json:"c2_profile_name" jsonschema:"required,description=C2 profile name for the connection"`
+	SourceID      int    `json:"source_id" jsonschema:"Source callback ID"`
+	DestinationID int    `json:"destination_id" jsonschema:"Destination callback ID"`
+	C2ProfileName string `json:"c2_profile_name" jsonschema:"C2 profile name for the connection"`
 }
 
 type removeCallbackEdgeArgs struct {
-	EdgeID int `json:"edge_id" jsonschema:"required,description=ID of the callback graph edge to remove"`
+	EdgeID int `json:"edge_id" jsonschema:"ID of the callback graph edge to remove"`
 }
 
 // Tool handlers

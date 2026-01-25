@@ -52,30 +52,30 @@ func (s *Server) registerScreenshotsTools() {
 // Tool argument types for screenshot tools
 
 type getScreenshotsArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
-	Limit      int `json:"limit" jsonschema:"required,description=Maximum number of screenshots to retrieve"`
+	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	Limit      int `json:"limit" jsonschema:"Maximum number of screenshots to retrieve"`
 }
 
 type getScreenshotByIDArgs struct {
-	ScreenshotID int `json:"screenshot_id" jsonschema:"required,description=ID of the screenshot"`
+	ScreenshotID int `json:"screenshot_id" jsonschema:"ID of the screenshot"`
 }
 
 type getScreenshotTimelineArgs struct {
-	CallbackID int    `json:"callback_id" jsonschema:"required,description=Display ID of the callback"`
-	StartTime  string `json:"start_time" jsonschema:"required,description=Start time in RFC3339 format"`
-	EndTime    string `json:"end_time" jsonschema:"required,description=End time in RFC3339 format"`
+	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback"`
+	StartTime  string `json:"start_time" jsonschema:"Start time in RFC3339 format"`
+	EndTime    string `json:"end_time" jsonschema:"End time in RFC3339 format"`
 }
 
 type getScreenshotThumbnailArgs struct {
-	AgentFileID string `json:"agent_file_id" jsonschema:"required,description=Agent file ID of the screenshot"`
+	AgentFileID string `json:"agent_file_id" jsonschema:"Agent file ID of the screenshot"`
 }
 
 type downloadScreenshotArgs struct {
-	AgentFileID string `json:"agent_file_id" jsonschema:"required,description=Agent file ID of the screenshot"`
+	AgentFileID string `json:"agent_file_id" jsonschema:"Agent file ID of the screenshot"`
 }
 
 type deleteScreenshotArgs struct {
-	AgentFileID string `json:"agent_file_id" jsonschema:"required,description=Agent file ID of the screenshot to delete"`
+	AgentFileID string `json:"agent_file_id" jsonschema:"Agent file ID of the screenshot to delete"`
 }
 
 // Tool handlers

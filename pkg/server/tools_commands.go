@@ -39,8 +39,8 @@ type getCommandsArgs struct{}
 type getCommandParametersArgs struct{}
 
 type getCommandWithParametersArgs struct {
-	PayloadTypeID int    `json:"payload_type_id" jsonschema:"required,description=ID of the payload type"`
-	CommandName   string `json:"command_name" jsonschema:"required,description=Name of the command"`
+	PayloadTypeID int    `json:"payload_type_id" jsonschema:"ID of the payload type"`
+	CommandName   string `json:"command_name" jsonschema:"Name of the command"`
 }
 
 // Tool handlers

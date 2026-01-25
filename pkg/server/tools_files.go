@@ -67,7 +67,7 @@ type getFilesArgs struct {
 }
 
 type getFileArgs struct {
-	FileID string `json:"file_id" jsonschema:"required,description=UUID of the file to retrieve"`
+	FileID string `json:"file_id" jsonschema:"UUID of the file to retrieve"`
 }
 
 type getDownloadedFilesArgs struct {
@@ -75,24 +75,24 @@ type getDownloadedFilesArgs struct {
 }
 
 type uploadFileArgs struct {
-	Filename string `json:"filename" jsonschema:"required,description=Name of the file"`
-	FileData string `json:"file_data" jsonschema:"required,description=Base64-encoded file content"`
+	Filename string `json:"filename" jsonschema:"Name of the file"`
+	FileData string `json:"file_data" jsonschema:"Base64-encoded file content"`
 }
 
 type downloadFileArgs struct {
-	FileUUID string `json:"file_uuid" jsonschema:"required,description=UUID of the file to download"`
+	FileUUID string `json:"file_uuid" jsonschema:"UUID of the file to download"`
 }
 
 type deleteFileArgs struct {
-	FileID string `json:"file_id" jsonschema:"required,description=UUID of the file to delete"`
+	FileID string `json:"file_id" jsonschema:"UUID of the file to delete"`
 }
 
 type bulkDownloadFilesArgs struct {
-	FileUUIDs []string `json:"file_uuids" jsonschema:"required,description=Array of file UUIDs to download"`
+	FileUUIDs []string `json:"file_uuids" jsonschema:"Array of file UUIDs to download"`
 }
 
 type previewFileArgs struct {
-	FileID string `json:"file_id" jsonschema:"required,description=UUID of the file to preview"`
+	FileID string `json:"file_id" jsonschema:"UUID of the file to preview"`
 }
 
 // Tool handlers

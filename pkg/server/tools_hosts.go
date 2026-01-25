@@ -44,23 +44,23 @@ func (s *Server) registerHostsTools() {
 // Tool argument types for host tools
 
 type getHostsArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 type getHostByIDArgs struct {
-	HostID int `json:"host_id" jsonschema:"required,description=ID of the host"`
+	HostID int `json:"host_id" jsonschema:"ID of the host"`
 }
 
 type getHostByHostnameArgs struct {
-	Hostname string `json:"hostname" jsonschema:"required,description=Hostname to search for"`
+	Hostname string `json:"hostname" jsonschema:"Hostname to search for"`
 }
 
 type getHostNetworkMapArgs struct {
-	OperationID int `json:"operation_id" jsonschema:"required,description=ID of the operation"`
+	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
 }
 
 type getCallbacksForHostArgs struct {
-	HostID int `json:"host_id" jsonschema:"required,description=ID of the host"`
+	HostID int `json:"host_id" jsonschema:"ID of the host"`
 }
 
 // Tool handlers
