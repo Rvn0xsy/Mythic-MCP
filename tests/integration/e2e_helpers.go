@@ -279,16 +279,16 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				fmt.Printf("\n========== DEBUG: MCP Message for %s ==========\n%s\n", toolName, string(debugData))
 			}
 
-			// Skip notifications - they have "method" field but no "id" matching our request
-			if method, ok := response["method"].(string); ok {
+			// Skip notifications - they have "Method" field (capital M)
+			if method, ok := response["Method"].(string); ok {
 				if os.Getenv("E2E_DEBUG") == "1" {
 					fmt.Printf("DEBUG: Skipping notification: %s\n", method)
 				}
 				continue // Skip notifications, wait for actual response
 			}
 
-			// Check if this response matches our request ID
-			if respID, ok := response["id"]; ok {
+			// Check if this response matches our request ID (capital I in ID)
+			if respID, ok := response["ID"]; ok {
 				// Compare IDs (handle both int64 and float64 from JSON)
 				var responseID int64
 				switch v := respID.(type) {
@@ -313,14 +313,16 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				fmt.Printf("DEBUG: Found matching response for request ID %d\n", requestID)
 			}
 
-			// Check for error in response
-			if errObj, ok := response["error"]; ok {
-				return nil, fmt.Errorf("MCP error: %v", errObj)
+			// Check for error in response (capital E in Error)
+			if errObj, ok := response["Error"]; ok {
+				if errMap, isMap := errObj.(map[string]interface{}); isMap && len(errMap) > 0 {
+					return nil, fmt.Errorf("MCP error: %v", errObj)
+				}
 			}
 
 			// Extract result from JSON-RPC response
-			// MCP response structure: {"jsonrpc": "2.0", "id": 1, "result": {...}}
-			resultField, hasResult := response["result"]
+			// MCP response structure: {"jsonrpc": "2.0", "ID": 1, "Result": {...}}
+			resultField, hasResult := response["Result"]
 			if !hasResult {
 				// No result field - return response as-is for compatibility
 				return response, nil
