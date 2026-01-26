@@ -262,50 +262,49 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				return nil, fmt.Errorf("transport closed")
 			}
 
-			// Encode message back to JSON to parse
-			responseData, err := json.Marshal(responseMsg)
-			if err != nil {
-				return nil, fmt.Errorf("failed to marshal response: %w", err)
-			}
-
-			var response map[string]interface{}
-			if err := json.Unmarshal(responseData, &response); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-			}
-
-			// Debug: Print response structure if E2E_DEBUG is set
-			if os.Getenv("E2E_DEBUG") == "1" {
-				debugData, _ := json.MarshalIndent(response, "", "  ")
-				fmt.Printf("\n========== DEBUG: MCP Message for %s ==========\n%s\n", toolName, string(debugData))
-			}
-
-			// Skip notifications - they have "Method" field (capital M)
-			if method, ok := response["Method"].(string); ok {
+			// Check message type - skip requests (notifications)
+			if req, isRequest := responseMsg.(*jsonrpc.Request); isRequest {
 				if os.Getenv("E2E_DEBUG") == "1" {
-					fmt.Printf("DEBUG: Skipping notification: %s\n", method)
+					fmt.Printf("DEBUG: Skipping notification: %s\n", req.Method)
 				}
 				continue // Skip notifications, wait for actual response
 			}
 
-			// Check if this response matches our request ID (capital I in ID)
-			if respID, ok := response["ID"]; ok {
-				// Compare IDs (handle both int64 and float64 from JSON)
-				var responseID int64
-				switch v := respID.(type) {
-				case float64:
-					responseID = int64(v)
-				case int64:
-					responseID = v
-				case int:
-					responseID = int64(v)
+			// Must be a response at this point
+			resp, isResponse := responseMsg.(*jsonrpc.Response)
+			if !isResponse {
+				if os.Getenv("E2E_DEBUG") == "1" {
+					fmt.Printf("DEBUG: Unknown message type: %T\n", responseMsg)
 				}
+				continue
+			}
 
-				if responseID != requestID {
-					if os.Getenv("E2E_DEBUG") == "1" {
-						fmt.Printf("DEBUG: Skipping response with mismatched ID: %v != %v\n", responseID, requestID)
-					}
-					continue // Not our response, keep waiting
+			// Check if this response matches our request ID using ID.Raw()
+			if !resp.ID.IsValid() {
+				if os.Getenv("E2E_DEBUG") == "1" {
+					fmt.Printf("DEBUG: Response has invalid/nil ID\n")
 				}
+				continue
+			}
+
+			responseID, ok := resp.ID.Raw().(int64)
+			if !ok {
+				// Try float64 (from JSON unmarshaling)
+				if f, isFloat := resp.ID.Raw().(float64); isFloat {
+					responseID = int64(f)
+				} else {
+					if os.Getenv("E2E_DEBUG") == "1" {
+						fmt.Printf("DEBUG: Response ID is not int64: %T = %v\n", resp.ID.Raw(), resp.ID.Raw())
+					}
+					continue
+				}
+			}
+
+			if responseID != requestID {
+				if os.Getenv("E2E_DEBUG") == "1" {
+					fmt.Printf("DEBUG: Skipping response with mismatched ID: %v != %v\n", responseID, requestID)
+				}
+				continue // Not our response, keep waiting
 			}
 
 			// This is our response!
@@ -313,26 +312,25 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				fmt.Printf("DEBUG: Found matching response for request ID %d\n", requestID)
 			}
 
-			// Check for error in response (capital E in Error)
-			if errObj, ok := response["Error"]; ok {
-				if errMap, isMap := errObj.(map[string]interface{}); isMap && len(errMap) > 0 {
-					return nil, fmt.Errorf("MCP error: %v", errObj)
+			// Check for error in response
+			if resp.Error != nil {
+				return nil, fmt.Errorf("MCP error: %v", resp.Error)
+			}
+
+			// Extract result from Response
+			if resp.Result == nil {
+				// No result - return empty map
+				return map[string]interface{}{}, nil
+			}
+
+			// Unmarshal the Result (json.RawMessage) into a map
+			var result map[string]interface{}
+			if err := json.Unmarshal(resp.Result, &result); err != nil {
+				// Result is not a map - try to handle as raw value
+				if os.Getenv("E2E_DEBUG") == "1" {
+					fmt.Printf("DEBUG: Result is not a JSON object: %s\n", string(resp.Result))
 				}
-			}
-
-			// Extract result from JSON-RPC response
-			// MCP response structure: {"jsonrpc": "2.0", "ID": 1, "Result": {...}}
-			resultField, hasResult := response["Result"]
-			if !hasResult {
-				// No result field - return response as-is for compatibility
-				return response, nil
-			}
-
-			// Try to extract result as map
-			result, ok := resultField.(map[string]interface{})
-			if !ok {
-				// Result is not a map - wrap it
-				return map[string]interface{}{"result": resultField}, nil
+				return map[string]interface{}{"result": string(resp.Result)}, nil
 			}
 
 			// Extract structured content (domain objects) from MCP response
