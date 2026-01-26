@@ -197,6 +197,11 @@ func SetupE2ETest(t *testing.T) *MCPTestSetup {
 	// Register cleanup
 	t.Cleanup(setup.Cleanup)
 
+	// Perform MCP initialization handshake
+	if err := setup.initializeMCPSession(); err != nil {
+		require.NoError(t, err, "Failed to initialize MCP session")
+	}
+
 	return setup
 }
 
@@ -426,4 +431,106 @@ func parseTokenResult(response map[string]interface{}) *APIToken {
 type APIToken struct {
 	ID    int
 	Value string
+}
+
+// initializeMCPSession performs the MCP initialization handshake
+func (s *MCPTestSetup) initializeMCPSession() error {
+	// Send initialize request
+	requestID := atomic.AddInt64(&requestCounter, 1)
+	initRequest := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      requestID,
+		"method":  "initialize",
+		"params": map[string]interface{}{
+			"protocolVersion": "2024-11-05",
+			"capabilities":    map[string]interface{}{},
+			"clientInfo": map[string]interface{}{
+				"name":    "E2ETestClient",
+				"version": "1.0.0",
+			},
+		},
+	}
+
+	requestData, err := json.Marshal(initRequest)
+	if err != nil {
+		return fmt.Errorf("failed to marshal initialize request: %w", err)
+	}
+
+	requestMsg, err := jsonrpc.DecodeMessage(requestData)
+	if err != nil {
+		return fmt.Errorf("failed to decode initialize request: %w", err)
+	}
+
+	s.MCPTransport.SendMessage(requestMsg)
+
+	// Wait for initialize response
+	timeout := time.After(5 * time.Second)
+	for {
+		select {
+		case <-timeout:
+			return fmt.Errorf("timeout waiting for initialize response")
+		default:
+			responseMsg, ok := s.MCPTransport.ReceiveMessage()
+			if !ok {
+				return fmt.Errorf("transport closed during initialization")
+			}
+
+			// Skip notifications
+			if req, isRequest := responseMsg.(*jsonrpc.Request); isRequest {
+				if req.Method == "notifications/tools/list_changed" {
+					continue
+				}
+			}
+
+			// Check for response
+			resp, isResponse := responseMsg.(*jsonrpc.Response)
+			if !isResponse {
+				continue
+			}
+
+			// Check if it's our initialize response
+			if resp.ID.IsValid() {
+				respID, ok := resp.ID.Raw().(int64)
+				if !ok {
+					if f, isFloat := resp.ID.Raw().(float64); isFloat {
+						respID = int64(f)
+					} else {
+						continue
+					}
+				}
+				
+				if respID == requestID {
+					// Got initialize response
+					if resp.Error != nil {
+						return fmt.Errorf("initialize failed: %v", resp.Error)
+					}
+					goto initializeDone
+				}
+			}
+		}
+	}
+
+initializeDone:
+	// Send initialized notification
+	notificationRequest := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"method":  "notifications/initialized",
+	}
+
+	notifData, err := json.Marshal(notificationRequest)
+	if err != nil {
+		return fmt.Errorf("failed to marshal initialized notification: %w", err)
+	}
+
+	notifMsg, err := jsonrpc.DecodeMessage(notifData)
+	if err != nil {
+		return fmt.Errorf("failed to decode initialized notification: %w", err)
+	}
+
+	s.MCPTransport.SendMessage(notifMsg)
+
+	// Wait a moment for notification to be processed
+	time.Sleep(50 * time.Millisecond)
+
+	return nil
 }
