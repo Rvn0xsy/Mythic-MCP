@@ -279,6 +279,9 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				continue
 			}
 
+			if os.Getenv("E2E_DEBUG") == "1" {
+				fmt.Printf("DEBUG: Resp ID: %v (type %T), Request ID: %d\n", resp.ID.Raw(), resp.ID.Raw(), requestID)
+			}
 			// Check if this response matches our request ID using ID.Raw()
 			if !resp.ID.IsValid() {
 				if os.Getenv("E2E_DEBUG") == "1" {
