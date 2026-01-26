@@ -224,10 +224,11 @@ func (s *MCPTestSetup) Cleanup() {
 
 // CallMCPTool executes an MCP tool and returns result
 func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{}) (map[string]interface{}, error) {
-	// Create tool call request
+	// Create tool call request with unique ID
+	requestID := time.Now().UnixNano() // Use timestamp for unique ID
 	request := map[string]interface{}{
 		"jsonrpc": "2.0",
-		"id":      1,
+		"id":      requestID,
 		"method":  "tools/call",
 		"params": map[string]interface{}{
 			"name":      toolName,
@@ -249,103 +250,140 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 	// Send request
 	s.MCPTransport.SendMessage(requestMsg)
 
-	// Wait for response (with timeout)
-	select {
-	case <-time.After(10 * time.Second):
-		return nil, fmt.Errorf("timeout waiting for MCP response")
-	default:
-		responseMsg, ok := s.MCPTransport.ReceiveMessage()
-		if !ok {
-			return nil, fmt.Errorf("transport closed")
-		}
-
-		// Encode message back to JSON to parse
-		responseData, err := json.Marshal(responseMsg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal response: %w", err)
-		}
-
-		var response map[string]interface{}
-		if err := json.Unmarshal(responseData, &response); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-		}
-
-		// Debug: Print response structure if E2E_DEBUG is set
-		if os.Getenv("E2E_DEBUG") == "1" {
-			debugData, _ := json.MarshalIndent(response, "", "  ")
-			fmt.Printf("\n========== DEBUG: MCP Response for %s ==========\n%s\n", toolName, string(debugData))
-		}
-
-		// Check for error in response
-		if errObj, ok := response["error"]; ok {
-			return nil, fmt.Errorf("MCP error: %v", errObj)
-		}
-
-		// Extract result from JSON-RPC response
-		// MCP response structure: {"jsonrpc": "2.0", "id": 1, "result": {...}}
-		resultField, hasResult := response["result"]
-		if !hasResult {
-			// No result field - return response as-is for compatibility
-			return response, nil
-		}
-
-		// Try to extract result as map
-		result, ok := resultField.(map[string]interface{})
-		if !ok {
-			// Result is not a map - wrap it
-			return map[string]interface{}{"result": resultField}, nil
-		}
-
-		// Extract structured content (domain objects) from MCP response
-		// The MCP SDK puts the second return value in "structuredContent" field
-		var normalizedResult = make(map[string]interface{})
-
-		// Copy structuredContent as both "metadata" and "content" for test compatibility
-		// This field contains the actual domain objects from our tool handlers
-		if structuredContent, ok := result["structuredContent"]; ok {
-			normalizedResult["metadata"] = structuredContent
-			normalizedResult["content"] = structuredContent
-		}
-
-		// Also copy MCP Content array (text content) as mcp_content for reference
-		if content, ok := result["content"]; ok {
-			normalizedResult["mcp_content"] = content
-
-			// If we don't have structured content, use content field
-			if _, hasStructured := normalizedResult["content"]; !hasStructured {
-				normalizedResult["content"] = content
+	// Wait for response with matching ID (loop to skip notifications)
+	timeout := time.After(10 * time.Second)
+	for {
+		select {
+		case <-timeout:
+			return nil, fmt.Errorf("timeout waiting for MCP response")
+		default:
+			responseMsg, ok := s.MCPTransport.ReceiveMessage()
+			if !ok {
+				return nil, fmt.Errorf("transport closed")
 			}
-		}
 
-		// Copy isError field
-		if isError, ok := result["isError"]; ok {
-			normalizedResult["isError"] = isError
-		}
+			// Encode message back to JSON to parse
+			responseData, err := json.Marshal(responseMsg)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal response: %w", err)
+			}
 
-		// Copy _meta if present (for backward compatibility)
-		if meta, ok := result["_meta"]; ok {
-			normalizedResult["_meta"] = meta
-		}
+			var response map[string]interface{}
+			if err := json.Unmarshal(responseData, &response); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+			}
 
-		// If normalized result is empty, return original result
-		if len(normalizedResult) == 0 {
+			// Debug: Print response structure if E2E_DEBUG is set
 			if os.Getenv("E2E_DEBUG") == "1" {
-				fmt.Printf("DEBUG: Normalized result is empty, returning original result\n\n")
+				debugData, _ := json.MarshalIndent(response, "", "  ")
+				fmt.Printf("\n========== DEBUG: MCP Message for %s ==========\n%s\n", toolName, string(debugData))
 			}
-			return result, nil
-		}
 
-		// Debug: Print normalized result
-		if os.Getenv("E2E_DEBUG") == "1" {
-			normalizedData, _ := json.MarshalIndent(normalizedResult, "", "  ")
-			fmt.Printf("DEBUG: Normalized result for %s:\n%s\n", toolName, string(normalizedData))
-			if content, ok := normalizedResult["content"]; ok {
-				fmt.Printf("DEBUG: content field type: %T\n", content)
+			// Skip notifications - they have "method" field but no "id" matching our request
+			if method, ok := response["method"].(string); ok {
+				if os.Getenv("E2E_DEBUG") == "1" {
+					fmt.Printf("DEBUG: Skipping notification: %s\n", method)
+				}
+				continue // Skip notifications, wait for actual response
 			}
-			fmt.Printf("=================================================\n\n")
-		}
 
-		return normalizedResult, nil
+			// Check if this response matches our request ID
+			if respID, ok := response["id"]; ok {
+				// Compare IDs (handle both int64 and float64 from JSON)
+				var responseID int64
+				switch v := respID.(type) {
+				case float64:
+					responseID = int64(v)
+				case int64:
+					responseID = v
+				case int:
+					responseID = int64(v)
+				}
+
+				if responseID != requestID {
+					if os.Getenv("E2E_DEBUG") == "1" {
+						fmt.Printf("DEBUG: Skipping response with mismatched ID: %v != %v\n", responseID, requestID)
+					}
+					continue // Not our response, keep waiting
+				}
+			}
+
+			// This is our response!
+			if os.Getenv("E2E_DEBUG") == "1" {
+				fmt.Printf("DEBUG: Found matching response for request ID %d\n", requestID)
+			}
+
+			// Check for error in response
+			if errObj, ok := response["error"]; ok {
+				return nil, fmt.Errorf("MCP error: %v", errObj)
+			}
+
+			// Extract result from JSON-RPC response
+			// MCP response structure: {"jsonrpc": "2.0", "id": 1, "result": {...}}
+			resultField, hasResult := response["result"]
+			if !hasResult {
+				// No result field - return response as-is for compatibility
+				return response, nil
+			}
+
+			// Try to extract result as map
+			result, ok := resultField.(map[string]interface{})
+			if !ok {
+				// Result is not a map - wrap it
+				return map[string]interface{}{"result": resultField}, nil
+			}
+
+			// Extract structured content (domain objects) from MCP response
+			// The MCP SDK puts the second return value in "structuredContent" field
+			var normalizedResult = make(map[string]interface{})
+
+			// Copy structuredContent as both "metadata" and "content" for test compatibility
+			// This field contains the actual domain objects from our tool handlers
+			if structuredContent, ok := result["structuredContent"]; ok {
+				normalizedResult["metadata"] = structuredContent
+				normalizedResult["content"] = structuredContent
+			}
+
+			// Also copy MCP Content array (text content) as mcp_content for reference
+			if content, ok := result["content"]; ok {
+				normalizedResult["mcp_content"] = content
+
+				// If we don't have structured content, use content field
+				if _, hasStructured := normalizedResult["content"]; !hasStructured {
+					normalizedResult["content"] = content
+				}
+			}
+
+			// Copy isError field
+			if isError, ok := result["isError"]; ok {
+				normalizedResult["isError"] = isError
+			}
+
+			// Copy _meta if present (for backward compatibility)
+			if meta, ok := result["_meta"]; ok {
+				normalizedResult["_meta"] = meta
+			}
+
+			// If normalized result is empty, return original result
+			if len(normalizedResult) == 0 {
+				if os.Getenv("E2E_DEBUG") == "1" {
+					fmt.Printf("DEBUG: Normalized result is empty, returning original result\n\n")
+				}
+				return result, nil
+			}
+
+			// Debug: Print normalized result
+			if os.Getenv("E2E_DEBUG") == "1" {
+				normalizedData, _ := json.MarshalIndent(normalizedResult, "", "  ")
+				fmt.Printf("DEBUG: Normalized result for %s:\n%s\n", toolName, string(normalizedData))
+				if content, ok := normalizedResult["content"]; ok {
+					fmt.Printf("DEBUG: content field type: %T\n", content)
+				}
+				fmt.Printf("=================================================\n\n")
+			}
+
+			return normalizedResult, nil
+		}
 	}
 }
 
