@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -18,6 +19,9 @@ import (
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic"
 	"github.com/stretchr/testify/require"
 )
+
+// Global request ID counter
+var requestCounter int64
 
 // MCPTestSetup provides E2E test infrastructure
 type MCPTestSetup struct {
@@ -224,8 +228,10 @@ func (s *MCPTestSetup) Cleanup() {
 
 // CallMCPTool executes an MCP tool and returns result
 func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{}) (map[string]interface{}, error) {
-	// Create tool call request with unique ID
-	requestID := time.Now().UnixNano() // Use timestamp for unique ID
+	// Create unique request ID using atomic counter
+	requestID := atomic.AddInt64(&requestCounter, 1)
+
+	// Create tool call request
 	request := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      requestID,
@@ -249,6 +255,9 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 
 	// Send request
 	s.MCPTransport.SendMessage(requestMsg)
+
+	// Expected ID is what we sent
+	expectedID := requestID
 
 	// Wait for response with matching ID (loop to skip notifications)
 	timeout := time.After(10 * time.Second)
@@ -280,7 +289,7 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 			}
 
 			if os.Getenv("E2E_DEBUG") == "1" {
-				fmt.Printf("DEBUG: Resp ID: %v (type %T), Request ID: %d\n", resp.ID.Raw(), resp.ID.Raw(), requestID)
+				fmt.Printf("DEBUG: Resp ID: %v (type %T), Expected ID: %d\\n", resp.ID.Raw(), resp.ID.Raw(), expectedID)
 			}
 			// Check if this response matches our request ID using ID.Raw()
 			if !resp.ID.IsValid() {
@@ -303,16 +312,16 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				}
 			}
 
-			if responseID != requestID {
+			if responseID != expectedID {
 				if os.Getenv("E2E_DEBUG") == "1" {
-					fmt.Printf("DEBUG: Skipping response with mismatched ID: %v != %v\n", responseID, requestID)
+					fmt.Printf("DEBUG: Skipping response with mismatched ID: %v != %v\\n", responseID, expectedID)
 				}
 				continue // Not our response, keep waiting
 			}
 
 			// This is our response!
 			if os.Getenv("E2E_DEBUG") == "1" {
-				fmt.Printf("DEBUG: Found matching response for request ID %d\n", requestID)
+				fmt.Printf("DEBUG: Found matching response for expected ID %d\\n", expectedID)
 			}
 
 			// Check for error in response
