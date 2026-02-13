@@ -74,13 +74,11 @@ type refreshTokenArgs struct{}
 
 // handleLogin authenticates with Mythic using username/password
 func (s *Server) handleLogin(ctx context.Context, req *mcp.CallToolRequest, args loginArgs) (*mcp.CallToolResult, any, error) {
-	// Note: The MCP server was already authenticated in Run()
-	// This tool allows re-authentication or verification
-	// For now, we'll use the existing client
+	// Update the SDK client with the user-supplied credentials so we
+	// authenticate as the requested user instead of reusing whatever
+	// credentials were provided at startup.
+	s.mythicClient.SetCredentials(args.Username, args.Password)
 
-	// Attempt login with provided credentials
-	// In a real implementation, we might create a new client or re-auth the existing one
-	// For now, just verify authentication works
 	if err := s.mythicClient.Login(ctx); err != nil {
 		return nil, nil, translateError(err)
 	}
@@ -88,7 +86,7 @@ func (s *Server) handleLogin(ctx context.Context, req *mcp.CallToolRequest, args
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{
-				Text: "Successfully authenticated with Mythic server",
+				Text: "Successfully authenticated with Mythic server as " + args.Username,
 			},
 		},
 	}, nil, nil
