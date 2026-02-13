@@ -75,14 +75,11 @@ func (s *Server) MCPServer() *mcp.Server {
 }
 
 // Run starts the MCP server on a single-session transport (e.g. stdio).
+// The server starts unauthenticated; the user must call mythic_login to
+// establish a session.
 // For HTTP serving, use MCPServer() with a StreamableHTTPHandler instead.
 func (s *Server) Run(ctx context.Context, transport mcp.Transport) error {
-	if err := s.Authenticate(ctx); err != nil {
-		return err
-	}
-
-	// Run MCP server with transport
-	log.Println("Starting MCP server...")
+	log.Println("Starting MCP server (unauthenticated — call mythic_login to authenticate)...")
 	return s.mcpServer.Run(ctx, transport)
 }
 

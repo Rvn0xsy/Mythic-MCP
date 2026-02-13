@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -51,13 +52,70 @@ func main() {
 		cancel()
 	}()
 
-	// Create stdio transport for MCP
-	transport := &mcp.StdioTransport{}
+	// Choose transport based on MCP_TRANSPORT env var (default: "http")
+	transport := os.Getenv("MCP_TRANSPORT")
+	if transport == "" {
+		transport = "http"
+	}
 
-	// Run server
-	log.Println("Starting Mythic MCP Server...")
-	if err := srv.Run(ctx, transport); err != nil {
-		log.Fatalf("Server error: %v", err)
+	switch transport {
+	case "stdio":
+		// Legacy: Run over stdio (for local/CLI use)
+		log.Println("Starting Mythic MCP Server (stdio transport)...")
+		if err := srv.Run(ctx, &mcp.StdioTransport{}); err != nil {
+			log.Fatalf("Server error: %v", err)
+		}
+
+	case "http":
+		// Server starts unauthenticated; the user must call mythic_login
+		// via MCP to establish a Mythic session.
+
+		// Determine listen address
+		addr := os.Getenv("MCP_HTTP_ADDR")
+		if addr == "" {
+			port := os.Getenv("MCP_HTTP_PORT")
+			if port == "" {
+				port = "3333"
+			}
+			addr = "0.0.0.0:" + port
+		}
+
+		// Create Streamable HTTP handler (MCP 2025-03-26 spec)
+		mcpHandler := mcp.NewStreamableHTTPHandler(
+			func(r *http.Request) *mcp.Server { return srv.MCPServer() },
+			nil, // default StreamableHTTPOptions
+		)
+
+		mux := http.NewServeMux()
+		mux.Handle("/mcp", mcpHandler)
+
+		// Health check endpoint
+		mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"status":"ok"}`))
+		})
+
+		httpServer := &http.Server{
+			Addr:    addr,
+			Handler: mux,
+		}
+
+		// Graceful shutdown
+		go func() {
+			<-ctx.Done()
+			log.Println("Shutting down HTTP server...")
+			httpServer.Close()
+		}()
+
+		log.Printf("Starting Mythic MCP Server (HTTP transport) on %s", addr)
+		log.Printf("  MCP endpoint:    http://%s/mcp", addr)
+		log.Printf("  Health check:    http://%s/healthz", addr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("HTTP server error: %v", err)
+		}
+
+	default:
+		log.Fatalf("Unknown MCP_TRANSPORT=%q (supported: http, stdio)", transport)
 	}
 
 	log.Println("Server stopped")

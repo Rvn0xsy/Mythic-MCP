@@ -41,15 +41,12 @@ func LoadFromEnv() (*Config, error) {
 	return cfg, nil
 }
 
-// Validate checks that required configuration is present
+// Validate checks that required configuration is present.
+// Only MYTHIC_URL is required at startup; credentials are optional because
+// the user can authenticate later via the mythic_login MCP tool.
 func (c *Config) Validate() error {
 	if c.MythicURL == "" {
 		return fmt.Errorf("MYTHIC_URL is required")
-	}
-
-	// Must have either API token or username/password
-	if c.APIToken == "" && (c.Username == "" || c.Password == "") {
-		return fmt.Errorf("either MYTHIC_API_TOKEN or MYTHIC_USERNAME/MYTHIC_PASSWORD must be set")
 	}
 
 	return nil

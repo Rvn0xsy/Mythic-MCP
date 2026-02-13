@@ -100,6 +100,45 @@ func TestTranslateError(t *testing.T) {
 	}
 }
 
+// TestNewServer_NoCredentials verifies the server can be created with only
+// a URL — no credentials required at construction time (deferred auth).
+func TestNewServer_NoCredentials(t *testing.T) {
+	cfg := &config.Config{
+		MythicURL: "https://mythic.example.com:7443",
+		SSL:       true,
+	}
+
+	srv, err := NewServer(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, srv)
+	defer srv.Close()
+
+	// mythicClient should exist but be unauthenticated
+	assert.False(t, srv.mythicClient.IsAuthenticated(),
+		"server should start unauthenticated when no credentials are provided")
+	assert.NotNil(t, srv.MCPServer())
+}
+
+// TestNewServer_WithCredentials_StillUnauthenticated verifies that even if
+// credentials are supplied in the config, the server does NOT pre-authenticate.
+func TestNewServer_WithCredentials_StillUnauthenticated(t *testing.T) {
+	cfg := &config.Config{
+		MythicURL: "https://mythic.example.com:7443",
+		Username:  "admin",
+		Password:  "password",
+		SSL:       true,
+	}
+
+	srv, err := NewServer(cfg)
+	require.NoError(t, err)
+	require.NotNil(t, srv)
+	defer srv.Close()
+
+	// Even with credentials in config, server should not have authenticated yet
+	assert.False(t, srv.mythicClient.IsAuthenticated(),
+		"server should NOT pre-authenticate during construction")
+}
+
 func TestServerClose(t *testing.T) {
 	cfg := &config.Config{
 		MythicURL: "https://mythic.example.com:7443",
@@ -111,6 +150,20 @@ func TestServerClose(t *testing.T) {
 	require.NoError(t, err)
 
 	// Close should not panic or error
+	err = srv.Close()
+	assert.NoError(t, err)
+}
+
+func TestServerClose_NoCredentials(t *testing.T) {
+	cfg := &config.Config{
+		MythicURL: "https://mythic.example.com:7443",
+		SSL:       true,
+	}
+
+	srv, err := NewServer(cfg)
+	require.NoError(t, err)
+
+	// Close should work even when server was never authenticated
 	err = srv.Close()
 	assert.NoError(t, err)
 }

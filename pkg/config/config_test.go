@@ -74,15 +74,18 @@ func TestLoadFromEnv(t *testing.T) {
 		assert.Contains(t, err.Error(), "MYTHIC_URL is required")
 	})
 
-	t.Run("MissingCredentials", func(t *testing.T) {
+	t.Run("NoCredentials_OK", func(t *testing.T) {
 		os.Setenv("MYTHIC_URL", "https://mythic.example.com:7443")
 		os.Unsetenv("MYTHIC_API_TOKEN")
 		os.Unsetenv("MYTHIC_USERNAME")
 		os.Unsetenv("MYTHIC_PASSWORD")
 
-		_, err := LoadFromEnv()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "MYTHIC_API_TOKEN or MYTHIC_USERNAME/MYTHIC_PASSWORD")
+		cfg, err := LoadFromEnv()
+		require.NoError(t, err)
+		assert.Equal(t, "https://mythic.example.com:7443", cfg.MythicURL)
+		assert.Empty(t, cfg.APIToken)
+		assert.Empty(t, cfg.Username)
+		assert.Empty(t, cfg.Password)
 	})
 
 	t.Run("CustomSettings", func(t *testing.T) {
@@ -130,29 +133,20 @@ func TestValidate(t *testing.T) {
 		assert.Error(t, err)
 	})
 
-	t.Run("MissingAllCredentials", func(t *testing.T) {
+	t.Run("URLOnly_OK", func(t *testing.T) {
 		cfg := &Config{
 			MythicURL: "https://mythic.example.com:7443",
 		}
 		err := cfg.Validate()
-		assert.Error(t, err)
+		assert.NoError(t, err)
 	})
 
-	t.Run("MissingUsername", func(t *testing.T) {
+	t.Run("PartialCreds_OK", func(t *testing.T) {
 		cfg := &Config{
 			MythicURL: "https://mythic.example.com:7443",
 			Password:  "password",
 		}
 		err := cfg.Validate()
-		assert.Error(t, err)
-	})
-
-	t.Run("MissingPassword", func(t *testing.T) {
-		cfg := &Config{
-			MythicURL: "https://mythic.example.com:7443",
-			Username:  "admin",
-		}
-		err := cfg.Validate()
-		assert.Error(t, err)
+		assert.NoError(t, err)
 	})
 }
