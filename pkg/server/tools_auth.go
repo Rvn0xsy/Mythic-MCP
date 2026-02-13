@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -154,19 +155,15 @@ func (s *Server) handleCreateAPIToken(ctx context.Context, req *mcp.CallToolRequ
 		return nil, nil, translateError(err)
 	}
 
-	// Marshal token to JSON
-	data, err := json.MarshalIndent(token, "", "  ")
-	if err != nil {
-		return nil, nil, err
-	}
-
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{
-				Text: string(data),
+				Text: fmt.Sprintf("API token created successfully:\n\n%s", token),
 			},
 		},
-	}, token, nil
+	}, map[string]interface{}{
+		"token_value": token,
+	}, nil
 }
 
 // handleDeleteAPIToken deletes an API token
