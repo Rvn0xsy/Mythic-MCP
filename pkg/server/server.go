@@ -58,14 +58,28 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	return server, nil
 }
 
-// Run starts the MCP server
-func (s *Server) Run(ctx context.Context, transport mcp.Transport) error {
-	// Authenticate with Mythic
+// Authenticate logs in to the Mythic instance. Call this before serving.
+func (s *Server) Authenticate(ctx context.Context) error {
 	log.Println("Authenticating with Mythic...")
 	if err := s.mythicClient.Login(ctx); err != nil {
 		return fmt.Errorf("failed to authenticate with Mythic: %w", err)
 	}
 	log.Println("Successfully authenticated with Mythic")
+	return nil
+}
+
+// MCPServer returns the underlying *mcp.Server so callers can wire it into
+// any transport (StreamableHTTPHandler, SSEHandler, StdioTransport, etc.).
+func (s *Server) MCPServer() *mcp.Server {
+	return s.mcpServer
+}
+
+// Run starts the MCP server on a single-session transport (e.g. stdio).
+// For HTTP serving, use MCPServer() with a StreamableHTTPHandler instead.
+func (s *Server) Run(ctx context.Context, transport mcp.Transport) error {
+	if err := s.Authenticate(ctx); err != nil {
+		return err
+	}
 
 	// Run MCP server with transport
 	log.Println("Starting MCP server...")
