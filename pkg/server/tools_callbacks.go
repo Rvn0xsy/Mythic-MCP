@@ -148,7 +148,7 @@ func (s *Server) handleGetAllCallbacks(ctx context.Context, req *mcp.CallToolReq
 				Text: fmt.Sprintf("All callbacks (%d total):\n\n%s", len(callbacks), string(data)),
 			},
 		},
-	}, callbacks, nil
+	}, wrapList(callbacks), nil
 }
 
 // handleGetActiveCallbacks retrieves active callbacks
@@ -169,7 +169,7 @@ func (s *Server) handleGetActiveCallbacks(ctx context.Context, req *mcp.CallTool
 				Text: fmt.Sprintf("Active callbacks (%d total):\n\n%s", len(callbacks), string(data)),
 			},
 		},
-	}, callbacks, nil
+	}, wrapList(callbacks), nil
 }
 
 // handleGetCallback retrieves a specific callback by ID
@@ -270,7 +270,7 @@ func (s *Server) handleGetLoadedCommands(ctx context.Context, req *mcp.CallToolR
 				Text: fmt.Sprintf("Loaded commands for callback %d (%d total):\n\n%s", args.CallbackID, len(commands), string(data)),
 			},
 		},
-	}, commands, nil
+	}, wrapList(commands), nil
 }
 
 // handleExportCallbackConfig exports a callback's configuration
@@ -330,7 +330,7 @@ func (s *Server) handleGetCallbackTokens(ctx context.Context, req *mcp.CallToolR
 				Text: fmt.Sprintf("Tokens for callback %d (%d total):\n\n%s", args.CallbackID, len(tokens), string(data)),
 			},
 		},
-	}, tokens, nil
+	}, wrapList(tokens), nil
 }
 
 // handleAddCallbackEdge adds a P2P callback edge

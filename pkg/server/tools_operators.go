@@ -169,7 +169,7 @@ func (s *Server) handleGetOperators(ctx context.Context, req *mcp.CallToolReques
 				Text: fmt.Sprintf("Operators (%d total):\n\n%s", len(operators), string(data)),
 			},
 		},
-	}, operators, nil
+	}, wrapList(operators), nil
 }
 
 // handleGetOperator retrieves a specific operator by ID
@@ -385,7 +385,7 @@ func (s *Server) handleGetInviteLinks(ctx context.Context, req *mcp.CallToolRequ
 				Text: fmt.Sprintf("Invite links (%d total):\n\n%s", len(links), string(data)),
 			},
 		},
-	}, links, nil
+	}, wrapList(links), nil
 }
 
 // handleCreateInviteLink creates a new invite link

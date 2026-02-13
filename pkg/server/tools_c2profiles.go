@@ -138,7 +138,7 @@ func (s *Server) handleGetC2Profiles(ctx context.Context, req *mcp.CallToolReque
 				Text: fmt.Sprintf("All C2 profiles (%d total):\n\n%s", len(profiles), string(data)),
 			},
 		},
-	}, profiles, nil
+	}, wrapList(profiles), nil
 }
 
 // handleGetC2Profile retrieves a specific C2 profile by ID

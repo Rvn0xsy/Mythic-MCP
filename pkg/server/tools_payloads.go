@@ -164,7 +164,7 @@ func (s *Server) handleGetPayloads(ctx context.Context, req *mcp.CallToolRequest
 				Text: fmt.Sprintf("All payloads (%d total):\n\n%s", len(payloads), string(data)),
 			},
 		},
-	}, payloads, nil
+	}, wrapList(payloads), nil
 }
 
 // handleGetPayload retrieves a specific payload by UUID
@@ -212,7 +212,7 @@ func (s *Server) handleGetPayloadTypes(ctx context.Context, req *mcp.CallToolReq
 				Text: fmt.Sprintf("Payload types (%d total):\n\n%s", len(payloadTypes), string(data)),
 			},
 		},
-	}, payloadTypes, nil
+	}, wrapList(payloadTypes), nil
 }
 
 // handleCreatePayload creates a new payload
@@ -400,7 +400,7 @@ func (s *Server) handleGetPayloadCommands(ctx context.Context, req *mcp.CallTool
 					args.PayloadID, len(commands), string(data)),
 			},
 		},
-	}, commands, nil
+	}, wrapList(commands), nil
 }
 
 // handleGetPayloadOnHost retrieves payloads on hosts
@@ -422,7 +422,7 @@ func (s *Server) handleGetPayloadOnHost(ctx context.Context, req *mcp.CallToolRe
 					args.OperationID, len(payloadsOnHost), string(data)),
 			},
 		},
-	}, payloadsOnHost, nil
+	}, wrapList(payloadsOnHost), nil
 }
 
 // handleWaitForPayload waits for a payload build to complete

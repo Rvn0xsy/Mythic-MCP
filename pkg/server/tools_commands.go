@@ -63,7 +63,7 @@ func (s *Server) handleGetCommands(ctx context.Context, req *mcp.CallToolRequest
 				Text: fmt.Sprintf("All commands (%d total):\n\n%s", len(commands), string(data)),
 			},
 		},
-	}, commands, nil
+	}, wrapList(commands), nil
 }
 
 // handleGetCommandParameters retrieves all command parameters
@@ -84,7 +84,7 @@ func (s *Server) handleGetCommandParameters(ctx context.Context, req *mcp.CallTo
 				Text: fmt.Sprintf("All command parameters (%d total):\n\n%s", len(parameters), string(data)),
 			},
 		},
-	}, parameters, nil
+	}, wrapList(parameters), nil
 }
 
 // handleGetCommandWithParameters retrieves a command with its parameters

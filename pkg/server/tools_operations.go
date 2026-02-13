@@ -153,7 +153,7 @@ func (s *Server) handleGetOperations(ctx context.Context, req *mcp.CallToolReque
 				Text: string(data),
 			},
 		},
-	}, operations, nil
+	}, wrapList(operations), nil
 }
 
 // handleGetOperation retrieves a specific operation by ID
@@ -305,7 +305,7 @@ func (s *Server) handleGetOperationOperators(ctx context.Context, req *mcp.CallT
 				Text: fmt.Sprintf("Operators in operation %d:\n\n%s", args.OperationID, string(data)),
 			},
 		},
-	}, operators, nil
+	}, wrapList(operators), nil
 }
 
 // handleCreateEventLog creates an event log entry
@@ -368,7 +368,7 @@ func (s *Server) handleGetEventLog(ctx context.Context, req *mcp.CallToolRequest
 				Text: fmt.Sprintf("Event logs for operation %d (limit %d):\n\n%s", args.OperationID, limit, string(data)),
 			},
 		},
-	}, eventLogs, nil
+	}, wrapList(eventLogs), nil
 }
 
 // handleGetGlobalSettings retrieves global Mythic settings

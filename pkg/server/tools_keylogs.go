@@ -70,7 +70,7 @@ func (s *Server) handleGetKeylogs(ctx context.Context, req *mcp.CallToolRequest,
 				Text: fmt.Sprintf("%s%s", summary, string(data)),
 			},
 		},
-	}, keylogs, nil
+	}, wrapList(keylogs), nil
 }
 
 // handleGetKeylogsByOperation retrieves keylogs for an operation
@@ -110,7 +110,7 @@ func (s *Server) handleGetKeylogsByOperation(ctx context.Context, req *mcp.CallT
 				Text: fmt.Sprintf("%sFull details:\n\n%s", summary, string(data)),
 			},
 		},
-	}, keylogs, nil
+	}, wrapList(keylogs), nil
 }
 
 // handleGetKeylogsByCallback retrieves keylogs for a callback
@@ -153,5 +153,5 @@ func (s *Server) handleGetKeylogsByCallback(ctx context.Context, req *mcp.CallTo
 				Text: fmt.Sprintf("%sFull details:\n\n%s", summary, string(data)),
 			},
 		},
-	}, keylogs, nil
+	}, wrapList(keylogs), nil
 }

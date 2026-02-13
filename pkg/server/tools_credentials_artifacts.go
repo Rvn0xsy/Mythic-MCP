@@ -189,7 +189,7 @@ func (s *Server) handleGetCredentials(ctx context.Context, req *mcp.CallToolRequ
 				Text: fmt.Sprintf("Credentials (%d total):\n\n%s", len(credentials), string(data)),
 			},
 		},
-	}, credentials, nil
+	}, wrapList(credentials), nil
 }
 
 // handleGetCredential retrieves a specific credential by ID
@@ -231,7 +231,7 @@ func (s *Server) handleGetOperationCredentials(ctx context.Context, req *mcp.Cal
 				Text: fmt.Sprintf("Credentials for operation %d (%d total):\n\n%s", args.OperationID, len(credentials), string(data)),
 			},
 		},
-	}, credentials, nil
+	}, wrapList(credentials), nil
 }
 
 // handleCreateCredential creates a new credential
@@ -338,7 +338,7 @@ func (s *Server) handleGetArtifacts(ctx context.Context, req *mcp.CallToolReques
 				Text: fmt.Sprintf("Artifacts (%d total):\n\n%s", len(artifacts), string(data)),
 			},
 		},
-	}, artifacts, nil
+	}, wrapList(artifacts), nil
 }
 
 // handleGetArtifact retrieves a specific artifact by ID
@@ -380,7 +380,7 @@ func (s *Server) handleGetOperationArtifacts(ctx context.Context, req *mcp.CallT
 				Text: fmt.Sprintf("Artifacts for operation %d (%d total):\n\n%s", args.OperationID, len(artifacts), string(data)),
 			},
 		},
-	}, artifacts, nil
+	}, wrapList(artifacts), nil
 }
 
 // handleGetHostArtifacts retrieves artifacts for a host
@@ -401,7 +401,7 @@ func (s *Server) handleGetHostArtifacts(ctx context.Context, req *mcp.CallToolRe
 				Text: fmt.Sprintf("Artifacts for host '%s' (%d total):\n\n%s", args.Host, len(artifacts), string(data)),
 			},
 		},
-	}, artifacts, nil
+	}, wrapList(artifacts), nil
 }
 
 // handleGetArtifactsByType retrieves artifacts by type
@@ -422,7 +422,7 @@ func (s *Server) handleGetArtifactsByType(ctx context.Context, req *mcp.CallTool
 				Text: fmt.Sprintf("Artifacts of type '%s' (%d total):\n\n%s", args.ArtifactType, len(artifacts), string(data)),
 			},
 		},
-	}, artifacts, nil
+	}, wrapList(artifacts), nil
 }
 
 // handleCreateArtifact creates a new artifact

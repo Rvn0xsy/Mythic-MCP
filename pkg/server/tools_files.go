@@ -120,7 +120,7 @@ func (s *Server) handleGetFiles(ctx context.Context, req *mcp.CallToolRequest, a
 				Text: fmt.Sprintf("Files (limit %d):\n\n%s", limit, string(data)),
 			},
 		},
-	}, files, nil
+	}, wrapList(files), nil
 }
 
 // handleGetFile retrieves a specific file's metadata
@@ -167,7 +167,7 @@ func (s *Server) handleGetDownloadedFiles(ctx context.Context, req *mcp.CallTool
 				Text: fmt.Sprintf("Downloaded files (limit %d):\n\n%s", limit, string(data)),
 			},
 		},
-	}, files, nil
+	}, wrapList(files), nil
 }
 
 // handleUploadFile uploads a file to Mythic

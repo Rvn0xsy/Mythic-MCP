@@ -151,7 +151,7 @@ func (s *Server) handleGetTagTypes(ctx context.Context, req *mcp.CallToolRequest
 				Text: fmt.Sprintf("Tag types (%d total):\n\n%s", len(tagTypes), string(data)),
 			},
 		},
-	}, tagTypes, nil
+	}, wrapList(tagTypes), nil
 }
 
 // handleGetTagTypesByOperation retrieves tag types for an operation
@@ -172,7 +172,7 @@ func (s *Server) handleGetTagTypesByOperation(ctx context.Context, req *mcp.Call
 				Text: fmt.Sprintf("Tag types for operation %d (%d total):\n\n%s", args.OperationID, len(tagTypes), string(data)),
 			},
 		},
-	}, tagTypes, nil
+	}, wrapList(tagTypes), nil
 }
 
 // handleGetTagType retrieves a specific tag type by ID
@@ -337,7 +337,7 @@ func (s *Server) handleGetTags(ctx context.Context, req *mcp.CallToolRequest, ar
 				Text: fmt.Sprintf("Tags for %s %d (%d total):\n\n%s", args.SourceType, args.SourceID, len(tags), string(data)),
 			},
 		},
-	}, tags, nil
+	}, wrapList(tags), nil
 }
 
 // handleGetTagsByOperation retrieves all tags in an operation
@@ -358,7 +358,7 @@ func (s *Server) handleGetTagsByOperation(ctx context.Context, req *mcp.CallTool
 				Text: fmt.Sprintf("Tags in operation %d (%d total):\n\n%s", args.OperationID, len(tags), string(data)),
 			},
 		},
-	}, tags, nil
+	}, wrapList(tags), nil
 }
 
 // handleDeleteTag deletes a tag

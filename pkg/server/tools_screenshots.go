@@ -107,7 +107,7 @@ func (s *Server) handleGetScreenshots(ctx context.Context, req *mcp.CallToolRequ
 				Text: fmt.Sprintf("%s%s", summary, string(data)),
 			},
 		},
-	}, screenshots, nil
+	}, wrapList(screenshots), nil
 }
 
 // handleGetScreenshotByID retrieves a specific screenshot
@@ -165,7 +165,7 @@ func (s *Server) handleGetScreenshotTimeline(ctx context.Context, req *mcp.CallT
 				Text: fmt.Sprintf("%s%s", summary, string(data)),
 			},
 		},
-	}, screenshots, nil
+	}, wrapList(screenshots), nil
 }
 
 // handleGetScreenshotThumbnail downloads a screenshot thumbnail

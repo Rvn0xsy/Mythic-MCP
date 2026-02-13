@@ -91,7 +91,7 @@ func (s *Server) handleGetAttackTechniques(ctx context.Context, req *mcp.CallToo
 				Text: fmt.Sprintf("All MITRE ATT&CK techniques (%d total):\n\n%s", len(techniques), string(data)),
 			},
 		},
-	}, techniques, nil
+	}, wrapList(techniques), nil
 }
 
 // handleGetAttackTechniqueByID retrieves a specific technique by ID
@@ -157,7 +157,7 @@ func (s *Server) handleGetAttackByTask(ctx context.Context, req *mcp.CallToolReq
 					args.TaskID, len(attackTasks), string(data)),
 			},
 		},
-	}, attackTasks, nil
+	}, wrapList(attackTasks), nil
 }
 
 // handleGetAttackByCommand retrieves techniques associated with a command
@@ -179,7 +179,7 @@ func (s *Server) handleGetAttackByCommand(ctx context.Context, req *mcp.CallTool
 					args.CommandID, len(attackCommands), string(data)),
 			},
 		},
-	}, attackCommands, nil
+	}, wrapList(attackCommands), nil
 }
 
 // handleGetAttacksByOperation retrieves all techniques used in an operation
@@ -212,5 +212,5 @@ func (s *Server) handleGetAttacksByOperation(ctx context.Context, req *mcp.CallT
 				Text: fmt.Sprintf("%s\nFull details:\n\n%s", summary, string(data)),
 			},
 		},
-	}, techniques, nil
+	}, wrapList(techniques), nil
 }

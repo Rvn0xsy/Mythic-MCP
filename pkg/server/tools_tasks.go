@@ -302,7 +302,7 @@ func (s *Server) handleGetCallbackTasks(ctx context.Context, req *mcp.CallToolRe
 					args.CallbackID, len(tasks), limit, string(data)),
 			},
 		},
-	}, tasks, nil
+	}, wrapList(tasks), nil
 }
 
 // handleGetTasksByStatus retrieves tasks filtered by status
@@ -332,7 +332,7 @@ func (s *Server) handleGetTasksByStatus(ctx context.Context, req *mcp.CallToolRe
 					args.Status, args.CallbackID, len(tasks), limit, string(data)),
 			},
 		},
-	}, tasks, nil
+	}, wrapList(tasks), nil
 }
 
 // handleWaitForTask waits for a task to complete
@@ -386,7 +386,7 @@ func (s *Server) handleGetTaskOutput(ctx context.Context, req *mcp.CallToolReque
 				Text: fmt.Sprintf("Output for task %d (%d responses):\n\n%s", args.TaskID, len(output), string(data)),
 			},
 		},
-	}, output, nil
+	}, wrapList(output), nil
 }
 
 // handleReissueTask reissues a task
@@ -446,7 +446,7 @@ func (s *Server) handleGetTaskArtifacts(ctx context.Context, req *mcp.CallToolRe
 					args.TaskID, len(artifacts), string(data)),
 			},
 		},
-	}, artifacts, nil
+	}, wrapList(artifacts), nil
 }
 
 // handleRequestOpsecBypass requests OPSEC bypass for a task
@@ -522,7 +522,7 @@ func (s *Server) handleGetTaskResponses(ctx context.Context, req *mcp.CallToolRe
 					args.TaskID, len(responses), string(data)),
 			},
 		},
-	}, responses, nil
+	}, wrapList(responses), nil
 }
 
 // handleGetCallbackResponses retrieves responses for a callback
@@ -555,7 +555,7 @@ func (s *Server) handleGetCallbackResponses(ctx context.Context, req *mcp.CallTo
 					args.CallbackID, len(responses), limit, string(data)),
 			},
 		},
-	}, responses, nil
+	}, wrapList(responses), nil
 }
 
 // handleGetResponse retrieves a specific response by ID
@@ -604,7 +604,7 @@ func (s *Server) handleGetLatestResponses(ctx context.Context, req *mcp.CallTool
 					args.OperationID, len(responses), limit, string(data)),
 			},
 		},
-	}, responses, nil
+	}, wrapList(responses), nil
 }
 
 // handleSearchResponses searches response text
@@ -640,7 +640,7 @@ func (s *Server) handleSearchResponses(ctx context.Context, req *mcp.CallToolReq
 					args.SearchTerm, len(responses), limit, string(data)),
 			},
 		},
-	}, responses, nil
+	}, wrapList(responses), nil
 }
 
 // handleGetResponseStatistics retrieves response statistics

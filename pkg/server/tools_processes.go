@@ -81,7 +81,7 @@ func (s *Server) handleGetProcesses(ctx context.Context, req *mcp.CallToolReques
 				Text: fmt.Sprintf("All processes (%d total):\n\n%s", len(processes), string(data)),
 			},
 		},
-	}, processes, nil
+	}, wrapList(processes), nil
 }
 
 // handleGetProcessesByOperation retrieves processes for an operation
@@ -116,7 +116,7 @@ func (s *Server) handleGetProcessesByOperation(ctx context.Context, req *mcp.Cal
 				Text: fmt.Sprintf("%s\nFull details:\n\n%s", summary, string(data)),
 			},
 		},
-	}, processes, nil
+	}, wrapList(processes), nil
 }
 
 // handleGetProcessesByCallback retrieves processes for a callback
@@ -138,7 +138,7 @@ func (s *Server) handleGetProcessesByCallback(ctx context.Context, req *mcp.Call
 					args.CallbackID, len(processes), string(data)),
 			},
 		},
-	}, processes, nil
+	}, wrapList(processes), nil
 }
 
 // handleGetProcessTree retrieves process tree for a callback
@@ -160,7 +160,7 @@ func (s *Server) handleGetProcessTree(ctx context.Context, req *mcp.CallToolRequ
 					args.CallbackID, len(processTree), string(data)),
 			},
 		},
-	}, processTree, nil
+	}, wrapList(processTree), nil
 }
 
 // handleGetProcessesByHost retrieves processes for a host
@@ -182,5 +182,5 @@ func (s *Server) handleGetProcessesByHost(ctx context.Context, req *mcp.CallTool
 					args.HostID, len(processes), string(data)),
 			},
 		},
-	}, processes, nil
+	}, wrapList(processes), nil
 }

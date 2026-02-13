@@ -95,7 +95,7 @@ func (s *Server) handleGetHosts(ctx context.Context, req *mcp.CallToolRequest, a
 				Text: fmt.Sprintf("%s\nFull details:\n\n%s", summary, string(data)),
 			},
 		},
-	}, hosts, nil
+	}, wrapList(hosts), nil
 }
 
 // handleGetHostByID retrieves a specific host by ID
@@ -198,5 +198,5 @@ func (s *Server) handleGetCallbacksForHost(ctx context.Context, req *mcp.CallToo
 				Text: fmt.Sprintf("%s\nFull details:\n\n%s", summary, string(data)),
 			},
 		},
-	}, callbacks, nil
+	}, wrapList(callbacks), nil
 }
