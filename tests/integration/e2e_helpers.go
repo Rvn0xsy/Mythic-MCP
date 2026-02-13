@@ -498,7 +498,7 @@ func (s *MCPTestSetup) initializeMCPSession() error {
 						continue
 					}
 				}
-				
+
 				if respID == requestID {
 					// Got initialize response
 					if resp.Error != nil {
