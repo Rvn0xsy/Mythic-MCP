@@ -32,6 +32,19 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	// Auto-detect file vending base URL from HTTP listen address if not set
+	if cfg.FileVendingEnabled && cfg.FileVendingBaseURL == "" {
+		port := os.Getenv("MCP_HTTP_PORT")
+		if port == "" {
+			port = "3333"
+		}
+		httpAddr := os.Getenv("MCP_HTTP_ADDR")
+		if httpAddr == "" {
+			httpAddr = "0.0.0.0:" + port
+		}
+		cfg.FileVendingBaseURL = fmt.Sprintf("http://%s", httpAddr)
+	}
+
 	// Create server
 	srv, err := server.NewServer(cfg)
 	if err != nil {
@@ -88,6 +101,12 @@ func main() {
 
 		mux := http.NewServeMux()
 		mux.Handle("/mcp", mcpHandler)
+
+		// File vending download endpoint
+		if fs := srv.FileStore(); fs != nil {
+			mux.HandleFunc("/download/", fs.ServeDownload)
+			log.Println("File vending enabled — download endpoint: /download/{file_id}?token=...")
+		}
 
 		// Health check endpoint
 		mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {

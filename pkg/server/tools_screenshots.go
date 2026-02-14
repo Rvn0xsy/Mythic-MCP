@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/nbaertsch/Mythic-MCP/pkg/filestore"
 )
 
 // registerScreenshotsTools registers screenshot management MCP tools
@@ -175,7 +176,25 @@ func (s *Server) handleGetScreenshotThumbnail(ctx context.Context, req *mcp.Call
 		return nil, nil, translateError(err)
 	}
 
-	// Encode as base64 for transmission
+	// Use file vending if enabled
+	if fs := s.FileStore(); fs != nil {
+		filename := args.AgentFileID + "_thumb.png"
+		resp, err := fs.StoreFile(thumbnailData, filename, filestore.FileTypeScreenshot, "image/png")
+		if err != nil {
+			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+		}
+		data, _ := json.MarshalIndent(resp, "", "  ")
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Screenshot thumbnail %s ready for download (%s).\nOne-time download URL (expires in %ds):\n%s\n\n%s",
+						args.AgentFileID, formatBytes(int64(len(thumbnailData))), resp.ExpiresInSeconds, resp.DownloadURL, string(data)),
+				},
+			},
+		}, resp, nil
+	}
+
+	// Fallback: base64 encoding
 	encodedData := base64.StdEncoding.EncodeToString(thumbnailData)
 
 	return &mcp.CallToolResult{
@@ -199,7 +218,25 @@ func (s *Server) handleDownloadScreenshot(ctx context.Context, req *mcp.CallTool
 		return nil, nil, translateError(err)
 	}
 
-	// Encode as base64 for transmission
+	// Use file vending if enabled
+	if fs := s.FileStore(); fs != nil {
+		filename := args.AgentFileID + ".png"
+		resp, err := fs.StoreFile(screenshotData, filename, filestore.FileTypeScreenshot, "image/png")
+		if err != nil {
+			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+		}
+		data, _ := json.MarshalIndent(resp, "", "  ")
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Screenshot %s ready for download (%s).\nOne-time download URL (expires in %ds):\n%s\n\n%s",
+						args.AgentFileID, formatBytes(int64(len(screenshotData))), resp.ExpiresInSeconds, resp.DownloadURL, string(data)),
+				},
+			},
+		}, resp, nil
+	}
+
+	// Fallback: base64 encoding
 	encodedData := base64.StdEncoding.EncodeToString(screenshotData)
 
 	return &mcp.CallToolResult{

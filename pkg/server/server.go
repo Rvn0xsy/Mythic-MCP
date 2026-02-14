@@ -7,6 +7,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/nbaertsch/Mythic-MCP/pkg/config"
+	"github.com/nbaertsch/Mythic-MCP/pkg/filestore"
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic"
 )
 
@@ -15,6 +16,7 @@ type Server struct {
 	config       *config.Config
 	mcpServer    *mcp.Server
 	mythicClient *mythic.Client
+	fileStore    *filestore.FileStore
 }
 
 // NewServer creates a new MCP server with Mythic integration
@@ -52,6 +54,24 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		mythicClient: mythicClient,
 	}
 
+	// Initialize file store for file vending
+	if cfg.FileVendingEnabled {
+		fsCfg := &filestore.Config{
+			Enabled:         true,
+			StoragePath:     cfg.FileStoragePath,
+			TokenExpiry:     cfg.FileTokenExpiry,
+			MaxFileSizeMB:   cfg.FileMaxSizeMB,
+			CleanupInterval: cfg.FileCleanupInterval,
+			BaseURL:         cfg.FileVendingBaseURL,
+		}
+		fs, err := filestore.New(fsCfg)
+		if err != nil {
+			log.Printf("Warning: failed to initialize file store: %v (file vending disabled)", err)
+		} else {
+			server.fileStore = fs
+		}
+	}
+
 	// Register MCP tools
 	server.registerTools()
 
@@ -85,10 +105,18 @@ func (s *Server) Run(ctx context.Context, transport mcp.Transport) error {
 
 // Close cleans up server resources
 func (s *Server) Close() error {
+	if s.fileStore != nil {
+		s.fileStore.Close()
+	}
 	if s.mythicClient != nil {
 		return s.mythicClient.Close()
 	}
 	return nil
+}
+
+// FileStore returns the file store instance (may be nil if disabled).
+func (s *Server) FileStore() *filestore.FileStore {
+	return s.fileStore
 }
 
 // registerTools registers all MCP tools

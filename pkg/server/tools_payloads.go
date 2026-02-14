@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/nbaertsch/Mythic-MCP/pkg/filestore"
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic/types"
 )
 
@@ -465,7 +466,25 @@ func (s *Server) handleDownloadPayload(ctx context.Context, req *mcp.CallToolReq
 		return nil, nil, translateError(err)
 	}
 
-	// Encode to base64 for transfer
+	// Use file vending if enabled
+	if fs := s.FileStore(); fs != nil {
+		filename := args.PayloadUUID + ".bin"
+		resp, err := fs.StoreFile(payloadData, filename, filestore.FileTypePayload, "application/octet-stream")
+		if err != nil {
+			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+		}
+		data, _ := json.MarshalIndent(resp, "", "  ")
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Payload %s ready for download (%d bytes).\nOne-time download URL (expires in %ds):\n%s\n\n%s",
+						args.PayloadUUID, resp.Size, resp.ExpiresInSeconds, resp.DownloadURL, string(data)),
+				},
+			},
+		}, resp, nil
+	}
+
+	// Fallback: base64 encoding
 	encodedData := base64.StdEncoding.EncodeToString(payloadData)
 
 	return &mcp.CallToolResult{

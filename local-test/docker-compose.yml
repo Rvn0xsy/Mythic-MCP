@@ -1,0 +1,25 @@
+name: mythic-mcp-local-test
+
+services:
+  mythic-mcp:
+    build:
+      context: ..
+      dockerfile: local-test/Dockerfile
+    environment:
+      # Mythic connection (required by the MCP server)
+      MYTHIC_URL: ${MYTHIC_URL}
+      MYTHIC_API_TOKEN: ${MYTHIC_API_TOKEN-}
+      MYTHIC_USERNAME: ${MYTHIC_USERNAME-}
+      MYTHIC_PASSWORD: ${MYTHIC_PASSWORD-}
+      MYTHIC_SSL: ${MYTHIC_SSL-true}
+      MYTHIC_SKIP_TLS_VERIFY: ${MYTHIC_SKIP_TLS_VERIFY-true}
+
+      # MCP HTTP transport settings
+      MCP_TRANSPORT: http
+      MCP_HTTP_PORT: ${MCP_HTTP_PORT-3333}
+
+      # Logging / timeouts
+      LOG_LEVEL: ${LOG_LEVEL-info}
+      TIMEOUT: ${TIMEOUT-30s}
+    ports:
+      - "${MCP_HTTP_PORT-3333}:3333"
