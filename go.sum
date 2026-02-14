@@ -65,6 +65,8 @@ github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214164923-efa0fa920b27 h1:HO+RcMb
 github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214164923-efa0fa920b27/go.mod h1:sR/XMW2oKPlsKCGzccJQkNOQtIcmgbJaTknghJKGMuI=
 github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214172358-0946ca85ef39 h1:inuba4EhOvpyXZueh7Dgi35a7NDIs3gyb8a7NdrHz48=
 github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214172358-0946ca85ef39/go.mod h1:sR/XMW2oKPlsKCGzccJQkNOQtIcmgbJaTknghJKGMuI=
+github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214202311-cec3b9efc643 h1:DIeFHtdCY0GWaU8qVIoS4bys3hrADkEmEe7r13Sj8mU=
+github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214202311-cec3b9efc643/go.mod h1:sR/XMW2oKPlsKCGzccJQkNOQtIcmgbJaTknghJKGMuI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

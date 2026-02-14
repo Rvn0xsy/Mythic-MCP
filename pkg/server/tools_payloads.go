@@ -27,8 +27,10 @@ func (s *Server) registerPayloadsTools() {
 
 	// mythic_get_payload_types - List payload types
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_get_payload_types",
-		Description: "Get list of available payload types (agent types)",
+		Name: "mythic_get_payload_types",
+		Description: "Get list of available payload types (agent types). " +
+			"Each payload type includes a supported_c2_profiles array listing which C2 profiles it can use. " +
+			"Use this to verify C2 profile compatibility BEFORE creating a payload.",
 	}, s.handleGetPayloadTypes)
 
 	// mythic_create_payload - Create a new payload
