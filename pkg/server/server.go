@@ -108,6 +108,7 @@ func (s *Server) registerTools() {
 	s.registerCallbacksTools()
 	s.registerTasksTools()
 	s.registerPayloadsTools()
+	s.registerPayloadDiscoveryTools()
 	s.registerC2ProfilesTools()
 	s.registerCommandsTools()
 

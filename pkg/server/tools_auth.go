@@ -156,14 +156,14 @@ func (s *Server) handleCreateAPIToken(ctx context.Context, req *mcp.CallToolRequ
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("API token created successfully:\n\n%s", token),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("API token created successfully:\n\n%s", token),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"token_value": token,
-	}, nil
+		}, map[string]interface{}{
+			"token_value": token,
+		}, nil
 }
 
 // handleDeleteAPIToken deletes an API token
