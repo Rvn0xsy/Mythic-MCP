@@ -21,10 +21,11 @@ func (s *Server) registerC2ProfilesTools() {
 			"Typical workflow: 1) list profiles, 2) start the profile, 3) get profile parameters, 4) create payload with those parameters.",
 	}, s.handleGetC2Profiles)
 
-	// mythic_get_c2_profile - Get specific C2 profile
+	// mythic_get_c2_profile - Get specific C2 profile with configuration
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_c2_profile",
-		Description: "Get details of a specific C2 profile by ID, including whether it is currently running (listening for callbacks).",
+		Description: "Get details of a specific C2 profile by ID, including its current configuration " +
+			"parameter values (callback_host, callback_port, etc.) and whether it is currently running.",
 	}, s.handleGetC2Profile)
 
 	// mythic_create_c2_instance - Create a C2 profile instance
@@ -149,11 +150,32 @@ func (s *Server) handleGetC2Profiles(ctx context.Context, req *mcp.CallToolReque
 	}, wrapList(profiles), nil
 }
 
-// handleGetC2Profile retrieves a specific C2 profile by ID
+// handleGetC2Profile retrieves a specific C2 profile by ID, including its
+// current configuration parameter values.
 func (s *Server) handleGetC2Profile(ctx context.Context, req *mcp.CallToolRequest, args getC2ProfileArgs) (*mcp.CallToolResult, any, error) {
 	profile, err := s.mythicClient.GetC2ProfileByID(ctx, args.ProfileID)
 	if err != nil {
 		return nil, nil, translateError(err)
+	}
+
+	// Fetch configuration parameters and populate the profile's Parameters map
+	params, paramErr := s.mythicClient.GetC2ProfileParameters(ctx, args.ProfileID)
+	if paramErr == nil && len(params) > 0 {
+		configuration := make(map[string]interface{}, len(params))
+		for _, p := range params {
+			configuration[p.Name] = map[string]interface{}{
+				"value":          p.DefaultValue,
+				"type":           p.ParameterType,
+				"required":       p.Required,
+				"description":    p.Description,
+				"verifier_regex": p.VerifierRegex,
+			}
+			// Include choices for selection types
+			if p.Choices != "" && p.Choices != "[]" {
+				configuration[p.Name].(map[string]interface{})["choices"] = p.Choices
+			}
+		}
+		profile.Parameters = configuration
 	}
 
 	data, err := json.MarshalIndent(profile, "", "  ")
