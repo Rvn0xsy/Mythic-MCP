@@ -14,19 +14,25 @@ func (s *Server) registerC2ProfilesTools() {
 	// mythic_get_c2_profiles - List all C2 profiles
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_c2_profiles",
-		Description: "Get a list of all C2 profiles in Mythic",
+		Description: "List all installed C2 communication profiles (e.g. http, httpx, smb, tcp). " +
+			"In Mythic, each C2 profile IS the listener — there is no separate listener concept. " +
+			"When running=true the profile is actively listening for agent callbacks. " +
+			"Not all agents support all profiles (e.g. Poseidon uses 'http', Xenon uses 'httpx'). " +
+			"Workflow: 1) list profiles, 2) ensure the needed profile is running, 3) get its parameters, 4) create a payload with those parameters.",
 	}, s.handleGetC2Profiles)
 
 	// mythic_get_c2_profile - Get specific C2 profile
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_c2_profile",
-		Description: "Get details of a specific C2 profile by ID",
+		Description: "Get details of a specific C2 profile by ID, including whether it is currently running (actively listening for callbacks).",
 	}, s.handleGetC2Profile)
 
-	// mythic_create_c2_instance - Create a C2 profile instance
+	// mythic_create_c2_instance - Save a named C2 parameter config (rarely needed)
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_create_c2_instance",
-		Description: "Create a new C2 profile instance with default configuration",
+		Description: "Save a named set of C2 profile parameters as a reusable template. " +
+			"Most users do NOT need this — C2 profiles are already installed and just need to be started. " +
+			"To use a C2 profile with a payload, pass parameters directly in mythic_create_payload's c2_profiles field.",
 	}, s.handleCreateC2Instance)
 
 	// mythic_import_c2_instance - Import C2 instance configuration
@@ -35,16 +41,19 @@ func (s *Server) registerC2ProfilesTools() {
 		Description: "Import a C2 profile instance from configuration JSON",
 	}, s.handleImportC2Instance)
 
-	// mythic_start_c2_profile - Start a C2 profile
+	// mythic_start_c2_profile - Start a C2 profile (begin listening)
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_start_c2_profile",
-		Description: "Start a C2 profile instance",
+		Description: "Start a C2 profile so it begins listening for agent callbacks. " +
+			"A profile must be running before deployed payloads can call back. " +
+			"Use mythic_get_c2_profiles first to check if it is already running.",
 	}, s.handleStartC2Profile)
 
-	// mythic_stop_c2_profile - Stop a C2 profile
+	// mythic_stop_c2_profile - Stop a C2 profile (stop listening)
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_stop_c2_profile",
-		Description: "Stop a running C2 profile instance",
+		Description: "Stop a running C2 profile so it no longer listens for callbacks. " +
+			"WARNING: any agents using this profile will lose their ability to call back until it is restarted.",
 	}, s.handleStopC2Profile)
 
 	// mythic_get_c2_profile_output - Get C2 profile output
