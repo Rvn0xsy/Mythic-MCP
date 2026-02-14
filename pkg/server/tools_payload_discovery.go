@@ -23,10 +23,11 @@ func (s *Server) registerPayloadDiscoveryTools() {
 	// mythic_get_c2_profile_parameters - Discover C2 profile configuration parameters
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name: "mythic_get_c2_profile_parameters",
-		Description: "Get the parameter schema for a C2 profile (e.g. callback_host, callback_port, etc). " +
-			"Returns all configurable parameters with name, type, required, default value, and description. " +
-			"Call this before mythic_create_payload to learn what to pass in the c2_profiles[].parameters field. " +
-			"Also ensure the C2 profile is running (started) before deploying the payload.",
+		Description: "Get the configuration parameter schema for a C2 profile. Returns all " +
+			"configurable parameters including name, type, required, default value, and description. " +
+			"IMPORTANT: Call this before creating a payload to learn what parameters to pass in the " +
+			"c2_profiles[].parameters field. Common parameters include callback_host, callback_port, etc. " +
+			"Also ensure the C2 profile is STARTED before deploying the payload.",
 	}, s.handleGetC2ProfileParameters)
 
 	// mythic_get_payload_type_commands - Discover available commands for a payload type
