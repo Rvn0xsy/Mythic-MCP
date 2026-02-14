@@ -86,7 +86,7 @@ func (s *Server) registerPayloadsTools() {
 	// mythic_download_payload - Download a built payload
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_download_payload",
-		Description: "Download a built payload's binary file (base64-encoded)",
+		Description: "Get a one-time download URL for a built payload binary. Use curl or wget with the returned download_url to fetch the file. The URL token is single-use and expires after 5 minutes.",
 	}, s.handleDownloadPayload)
 }
 

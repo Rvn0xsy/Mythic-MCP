@@ -39,7 +39,7 @@ func (s *Server) registerFilesTools() {
 	// mythic_download_file - Download a file
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_download_file",
-		Description: "Download a file's content from Mythic by its UUID",
+		Description: "Get a one-time download URL for a file stored in Mythic. Use curl or wget with the returned download_url to fetch the file content. The URL token is single-use and expires after 5 minutes.",
 	}, s.handleDownloadFile)
 
 	// mythic_delete_file - Delete a file
@@ -51,7 +51,7 @@ func (s *Server) registerFilesTools() {
 	// mythic_bulk_download_files - Download multiple files as ZIP
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_bulk_download_files",
-		Description: "Download multiple files as a single ZIP archive",
+		Description: "Get a download URL for multiple files bundled as a single ZIP archive. Use curl or wget with the returned URL to fetch the ZIP.",
 	}, s.handleBulkDownloadFiles)
 
 	// mythic_preview_file - Preview file content
