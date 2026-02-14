@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/modelcontextprotocol/go-sdk v1.2.0
-	github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214225557-f8ce3bef9268
+	github.com/nbaertsch/mythic-sdk-go v0.0.0-20260214230826-5d8d77e83090
 	github.com/stretchr/testify v1.11.1
 )
 
