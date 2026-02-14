@@ -150,7 +150,6 @@ func (s *Server) registerTools() {
 	s.registerScreenshotsTools()
 	s.registerKeylogsTools()
 
-	// Future phases will add more tool categories:
-	// - Tokens, Browser Scripts, File Browser (Phase 4)
-	// - Eventing, Alerts, Containers, etc. (Phase 5)
+	// Phase 5: Documentation tools
+	s.registerDocumentationTools()
 }
