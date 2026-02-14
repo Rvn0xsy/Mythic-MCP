@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/nbaertsch/Mythic-MCP/pkg/filestore"
@@ -251,6 +253,7 @@ func (s *Server) handleCreatePayload(ctx context.Context, req *mcp.CallToolReque
 	}
 
 	// Convert C2 profiles from map to C2ProfileConfig
+	// Auto-upload File-type parameters (e.g. httpx raw_c2_config)
 	if args.C2Profiles != nil {
 		c2Profiles := make([]types.C2ProfileConfig, 0, len(args.C2Profiles))
 		for _, profile := range args.C2Profiles {
@@ -259,6 +262,13 @@ func (s *Server) handleCreatePayload(ctx context.Context, req *mcp.CallToolReque
 				continue
 			}
 			params, _ := profile["parameters"].(map[string]interface{})
+			if params != nil {
+				resolved, resolveErr := s.resolveFileParams(ctx, name, params)
+				if resolveErr != nil {
+					return nil, nil, fmt.Errorf("failed to resolve file params for C2 profile %q: %w", name, resolveErr)
+				}
+				params = resolved
+			}
 			c2Profiles = append(c2Profiles, types.C2ProfileConfig{
 				Name:       name,
 				Parameters: params,
@@ -502,4 +512,85 @@ func (s *Server) handleDownloadPayload(ctx context.Context, req *mcp.CallToolReq
 			"size_raw":     len(payloadData),
 			"size_base64":  len(encodedData),
 		}, nil
+}
+
+// resolveFileParams checks C2 profile parameters for File-type params and
+// auto-uploads raw content, replacing the value with the returned file UUID.
+// This handles the common case where an LLM agent passes raw JSON/TOML content
+// for a File-type parameter (like httpx's raw_c2_config) instead of first
+// uploading the file and passing the UUID.
+func (s *Server) resolveFileParams(ctx context.Context, profileName string, params map[string]interface{}) (map[string]interface{}, error) {
+	// Look up the C2 profile to get its ID
+	profiles, err := s.mythicClient.GetC2Profiles(ctx)
+	if err != nil {
+		return params, nil // best-effort: if we can't look up, pass through
+	}
+	var profileID int
+	for _, p := range profiles {
+		if strings.EqualFold(p.Name, profileName) {
+			profileID = p.ID
+			break
+		}
+	}
+	if profileID == 0 {
+		return params, nil // profile not found, pass through
+	}
+
+	// Get parameter definitions to identify File-type params
+	paramDefs, err := s.mythicClient.GetC2ProfileParameters(ctx, profileID)
+	if err != nil {
+		return params, nil // best-effort
+	}
+
+	fileParams := make(map[string]bool)
+	for _, pd := range paramDefs {
+		if strings.EqualFold(pd.ParameterType, "File") {
+			fileParams[pd.Name] = true
+		}
+	}
+
+	// For each File-type param that has a value, check if it's raw content
+	// (not a UUID) and auto-upload it
+	for key, val := range params {
+		if !fileParams[key] {
+			continue
+		}
+		strVal, ok := val.(string)
+		if !ok || strVal == "" {
+			continue
+		}
+		// Heuristic: Mythic UUIDs are 36-char hex-dash strings.
+		// If it looks like a UUID, assume it's already uploaded.
+		if looksLikeUUID(strVal) {
+			continue
+		}
+		// It's raw content — upload it as a file
+		log.Printf("[resolveFileParams] auto-uploading %s content for C2 profile %q (%d bytes)", key, profileName, len(strVal))
+		fileID, err := s.mythicClient.UploadFile(ctx, fmt.Sprintf("%s_%s.toml", profileName, key), []byte(strVal))
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload %s: %w", key, err)
+		}
+		log.Printf("[resolveFileParams] uploaded %s as file %s", key, fileID)
+		params[key] = fileID
+	}
+
+	return params, nil
+}
+
+// looksLikeUUID returns true if the string matches a UUID-like pattern
+// (hex chars and dashes, 36 chars total). Mythic uses UUIDs for file references.
+func looksLikeUUID(s string) bool {
+	if len(s) != 36 {
+		return false
+	}
+	for i, c := range s {
+		if i == 8 || i == 13 || i == 18 || i == 23 {
+			if c != '-' {
+				return false
+			}
+		} else if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+			return false
+		}
+	}
+	return true
 }
