@@ -18,8 +18,22 @@ services:
       MCP_TRANSPORT: http
       MCP_HTTP_PORT: ${MCP_HTTP_PORT-3333}
 
+      # File vending system
+      FILE_VENDING_ENABLED: ${FILE_VENDING_ENABLED-true}
+      FILE_VENDING_BASE_URL: ${FILE_VENDING_BASE_URL-}
+      FILE_STORAGE_PATH: ${FILE_STORAGE_PATH-/tmp/mythic-files}
+      FILE_TOKEN_EXPIRY: ${FILE_TOKEN_EXPIRY-5m}
+      FILE_MAX_SIZE_MB: ${FILE_MAX_SIZE_MB-100}
+      FILE_CLEANUP_INTERVAL: ${FILE_CLEANUP_INTERVAL-60s}
+
       # Logging / timeouts
       LOG_LEVEL: ${LOG_LEVEL-info}
       TIMEOUT: ${TIMEOUT-30s}
+    networks:
+      - mythic_default
     ports:
       - "${MCP_HTTP_PORT-3333}:3333"
+
+networks:
+  mythic_default:
+    external: true
