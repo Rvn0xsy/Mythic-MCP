@@ -208,13 +208,54 @@ type getResponseStatisticsArgs struct {
 
 // Tool handlers for task operations
 
+// normalizeParams detects if a params string is a JSON object and extracts the value(s).
+// LLM agents frequently ignore instructions and pass {"path": "/tmp/foo"} instead of "/tmp/foo".
+// This function handles the conversion so Mythic receives the plain string the agent expects.
+func normalizeParams(params string) string {
+	if params == "" {
+		return params
+	}
+
+	// Try to parse as JSON object
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(params), &obj); err != nil {
+		// Not JSON — already a plain string, use as-is
+		return params
+	}
+
+	// Single-key JSON object: extract the value directly
+	// e.g. {"path": "/tmp/foo"} → "/tmp/foo"
+	if len(obj) == 1 {
+		for _, v := range obj {
+			switch val := v.(type) {
+			case string:
+				return val
+			case float64:
+				// JSON numbers — format as integer if whole
+				if val == float64(int(val)) {
+					return fmt.Sprintf("%d", int(val))
+				}
+				return fmt.Sprintf("%g", val)
+			default:
+				// Complex value — re-serialize
+				b, _ := json.Marshal(val)
+				return string(b)
+			}
+		}
+	}
+
+	// Multi-key JSON object: pass through as JSON string
+	// Mythic will parse it as structured parameters
+	return params
+}
+
 // handleIssueTask issues a task to a callback
 func (s *Server) handleIssueTask(ctx context.Context, req *mcp.CallToolRequest, args issueTaskArgs) (*mcp.CallToolResult, any, error) {
 	callbackID := args.CallbackID
 	issueReq := &mythic.TaskRequest{
 		CallbackID: &callbackID,
 		Command:    args.Command,
-		Params:     args.Params,
+		Params:     normalizeParams(args.Params),
 	}
 
 	task, err := s.mythicClient.IssueTask(ctx, issueReq)
