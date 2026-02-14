@@ -54,13 +54,13 @@ type VendedFileResponse struct {
 
 // Config holds file store configuration.
 type Config struct {
-	Enabled          bool
-	StoragePath      string
-	TokenExpiry      time.Duration
-	MaxFileSizeMB    int
-	CleanupInterval  time.Duration
-	BaseURL          string // e.g. "http://169.254.32.156:3333"
-	Secret           []byte // HMAC signing secret
+	Enabled         bool
+	StoragePath     string
+	TokenExpiry     time.Duration
+	MaxFileSizeMB   int
+	CleanupInterval time.Duration
+	BaseURL         string // e.g. "http://169.254.32.156:3333"
+	Secret          []byte // HMAC signing secret
 }
 
 // DefaultConfig returns a Config with sensible defaults.

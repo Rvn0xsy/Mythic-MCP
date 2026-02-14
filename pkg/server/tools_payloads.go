@@ -33,7 +33,7 @@ func (s *Server) registerPayloadsTools() {
 
 	// mythic_create_payload - Create a new payload
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_create_payload",
+		Name: "mythic_create_payload",
 		Description: "Create and build a new payload (agent binary). " +
 			"Before calling this, you should: " +
 			"1) mythic_get_payload_types — find the agent type (e.g. poseidon, xenon), " +
