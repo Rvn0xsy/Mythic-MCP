@@ -33,14 +33,8 @@ func (s *Server) registerPayloadsTools() {
 
 	// mythic_create_payload - Create a new payload
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name: "mythic_create_payload",
-		Description: "Create and build a new payload (agent binary). " +
-			"Before calling this, you should: " +
-			"1) mythic_get_payload_types — find the agent type (e.g. poseidon, xenon), " +
-			"2) mythic_get_payload_type_build_parameters — discover build params, " +
-			"3) mythic_get_c2_profiles — find a C2 profile and ensure it is running, " +
-			"4) mythic_get_c2_profile_parameters — discover what C2 params to pass. " +
-			"The payload build is async — use mythic_wait_for_payload to poll for completion.",
+		Name:        "mythic_create_payload",
+		Description: "Create/build a new payload",
 	}, s.handleCreatePayload)
 
 	// mythic_update_payload - Update payload properties
@@ -110,7 +104,7 @@ type createPayloadArgs struct {
 	OS              string                   `json:"os,omitempty" jsonschema:"Operating system for the payload"`
 	SelectedOS      string                   `json:"selected_os,omitempty" jsonschema:"Selected OS variant"`
 	Commands        []string                 `json:"commands,omitempty" jsonschema:"List of command names to include"`
-	C2Profiles      []map[string]interface{} `json:"c2_profiles,omitempty" jsonschema:"C2 profile configurations. Array of objects with 'name' (profile name like 'http' or 'httpx') and 'parameters' (key-value map from mythic_get_c2_profile_parameters, e.g. callback_host, callback_port). The named profile must be running."`
+	C2Profiles      []map[string]interface{} `json:"c2_profiles,omitempty" jsonschema:"C2 profile configurations. Each entry is {\"name\": \"<profile_name>\", \"parameters\": {<key>: <value>}}. The profile must be STARTED (running) before the payload can callback. Use mythic_get_c2_profile_parameters to discover required parameters. Example: [{\"name\": \"http\", \"parameters\": {\"callback_host\": \"http://ATTACKER_IP\", \"callback_port\": 80}}]"`
 	BuildParameters map[string]interface{}   `json:"build_parameters,omitempty" jsonschema:"Build parameter key-value pairs"`
 	WrapperPayload  string                   `json:"wrapper_payload,omitempty" jsonschema:"UUID of payload to wrap"`
 }

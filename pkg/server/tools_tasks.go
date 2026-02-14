@@ -130,7 +130,7 @@ func (s *Server) registerTasksTools() {
 type issueTaskArgs struct {
 	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
 	Command    string `json:"command" jsonschema:"Command name to execute"`
-	Params     string `json:"params" jsonschema:"JSON string of command parameters"`
+	Params     string `json:"params" jsonschema:"Command parameters as a plain string exactly as you would type after the command name in the Mythic UI. Examples: for 'shell' pass 'whoami' or 'ls -la /tmp', for 'mkdir' pass '/tmp/newdir', for 'kill' pass '1234', for 'chmod' pass '755 /tmp/file'. Do NOT pass JSON objects. Leave empty for commands with no parameters (pwd, ps, ifconfig, etc.)"`
 }
 
 type getTaskArgs struct {
