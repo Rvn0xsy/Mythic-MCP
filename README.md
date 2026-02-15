@@ -115,7 +115,7 @@ See the full [Getting Started guide](https://nbaertsch.github.io/Mythic-MCP/gett
 | `MYTHIC_SKIP_TLS_VERIFY` | | Skip TLS verification (default `false`) |
 | `MCP_TRANSPORT` | | `stdio` (default) or `http` |
 | `MCP_HTTP_PORT` | | HTTP/SSE listen port (default `3333`) |
-| `MYTHIC_DOCS_PATH` | | Path to Mythic docs content for `mythic_get_documentation` |
+| `MYTHIC_DOCS_URL` | | URL of Mythic documentation server (default: `http://mythic_documentation:8090`) |
 
 <sub>¹ One of API token or username/password is required.</sub>
 

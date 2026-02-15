@@ -2,119 +2,138 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
-	"path/filepath"
+	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-const defaultDocsPath = "/root/mythic/documentation-docker/content"
+const defaultDocsURL = "http://mythic_documentation:8090"
 
-// docsBasePath returns the documentation content directory,
-// configurable via MYTHIC_DOCS_PATH env var.
-func docsBasePath() string {
-	if p := os.Getenv("MYTHIC_DOCS_PATH"); p != "" {
-		return p
+// docsBaseURL returns the Mythic documentation container base URL,
+// configurable via MYTHIC_DOCS_URL env var.
+func docsBaseURL() string {
+	if u := os.Getenv("MYTHIC_DOCS_URL"); u != "" {
+		return strings.TrimRight(u, "/")
 	}
-	return defaultDocsPath
+	return defaultDocsURL
+}
+
+// docsHTTPClient is a shared HTTP client for fetching documentation.
+var docsHTTPClient = &http.Client{
+	Timeout: 15 * time.Second,
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+}
+
+// docIndexEntry represents a single entry from the Hugo search index.
+type docIndexEntry struct {
+	URI         string   `json:"uri"`
+	Title       string   `json:"title"`
+	Tags        []string `json:"tags"`
+	Description string   `json:"description"`
+	Content     string   `json:"content"`
+}
+
+// docIndex caches the fetched documentation index.
+type docIndex struct {
+	mu      sync.Mutex
+	entries []docIndexEntry
+	fetched time.Time
+	ttl     time.Duration
+}
+
+var cachedDocIndex = &docIndex{ttl: 5 * time.Minute}
+
+// fetch retrieves the docs index from the documentation container, with caching.
+func (di *docIndex) fetch() ([]docIndexEntry, error) {
+	di.mu.Lock()
+	defer di.mu.Unlock()
+
+	if di.entries != nil && time.Since(di.fetched) < di.ttl {
+		return di.entries, nil
+	}
+
+	url := docsBaseURL() + "/docs/index.json"
+	resp, err := docsHTTPClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to reach documentation server at %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("documentation server returned %d from %s", resp.StatusCode, url)
+	}
+
+	var entries []docIndexEntry
+	if err := json.NewDecoder(resp.Body).Decode(&entries); err != nil {
+		return nil, fmt.Errorf("failed to parse documentation index: %w", err)
+	}
+
+	di.entries = entries
+	di.fetched = time.Now()
+	return entries, nil
+}
+
+// uriToPath converts a Hugo URI like "//host:port/docs/agents/poseidon/"
+// to a clean path like "agents/poseidon".
+func uriToPath(uri string) string {
+	// Strip scheme-relative prefix and host
+	if idx := strings.Index(uri, "/docs/"); idx >= 0 {
+		uri = uri[idx+len("/docs/"):]
+	}
+	return strings.Trim(uri, "/")
+}
+
+// docTreeNode is used to build a hierarchical tree from flat paths.
+type docTreeNode struct {
+	Name     string         `json:"name"`
+	Path     string         `json:"path"`
+	Title    string         `json:"title,omitempty"`
+	HasDoc   bool           `json:"has_doc,omitempty"`
+	Children []*docTreeNode `json:"children,omitempty"`
 }
 
 // registerDocumentationTools registers documentation browsing tools.
 func (s *Server) registerDocumentationTools() {
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_list_documentation",
-		Description: "List available documentation for installed Mythic agents, C2 profiles, and wrappers. Returns a tree of documentation pages. Use this to discover what documentation is available before retrieving specific pages with mythic_get_documentation. Each entry has a path field you can pass to mythic_get_documentation.",
+		Description: "List available documentation for installed Mythic agents, C2 profiles, and wrappers. Returns a tree of documentation pages fetched from the Mythic documentation server. Use this to discover what documentation is available before retrieving specific pages with mythic_get_documentation. Each entry has a path field you can pass to mythic_get_documentation.",
 	}, s.handleListDocumentation)
 
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_documentation",
-		Description: "Retrieve the full markdown content of a specific documentation page. Use mythic_list_documentation first to discover available pages. Pass the path value from the listing (e.g. Agents/poseidon, C2 Profiles/httpx/examples, Agents/poseidon/commands/shell). IMPORTANT: Always read C2 profile documentation before creating payloads - profiles may require specific configuration files or parameters not obvious from the API alone.",
+		Description: "Retrieve the text content of a specific documentation page from the Mythic documentation server. Use mythic_list_documentation first to discover available pages. Pass the path value from the listing (e.g. agents/poseidon, c2-profiles/httpx/examples, agents/poseidon/commands/shell). IMPORTANT: Always read C2 profile documentation before creating payloads - profiles may require specific configuration files or parameters not obvious from the API alone.",
 	}, s.handleGetDocumentation)
 }
 
 type listDocumentationArgs struct{}
 
 type getDocumentationArgs struct {
-	Path string `json:"path" jsonschema:"Documentation path from the listing (e.g. Agents/poseidon or C2 Profiles/httpx/examples or Agents/poseidon/commands/shell)"`
-}
-
-// docEntry represents a single documentation node in the tree.
-type docEntry struct {
-	Name     string     `json:"name"`
-	Path     string     `json:"path"`
-	Children []docEntry `json:"children,omitempty"`
-}
-
-// buildDocTree walks a directory and builds a tree of doc entries.
-func buildDocTree(basePath, relPath string) []docEntry {
-	absPath := filepath.Join(basePath, relPath)
-	entries, err := os.ReadDir(absPath)
-	if err != nil {
-		return nil
-	}
-
-	var result []docEntry
-	for _, e := range entries {
-		if !e.IsDir() {
-			continue
-		}
-		childRel := filepath.Join(relPath, e.Name())
-		children := buildDocTree(basePath, childRel)
-
-		hasDoc := false
-		dirEntries, _ := os.ReadDir(filepath.Join(basePath, childRel))
-		for _, de := range dirEntries {
-			if !de.IsDir() && strings.HasSuffix(de.Name(), ".md") {
-				hasDoc = true
-				break
-			}
-		}
-
-		if hasDoc || len(children) > 0 {
-			entry := docEntry{
-				Name:     e.Name(),
-				Path:     childRel,
-				Children: children,
-			}
-			result = append(result, entry)
-		}
-	}
-	return result
+	Path string `json:"path" jsonschema:"Documentation path from the listing (e.g. agents/poseidon, c2-profiles/httpx/examples, agents/poseidon/commands/shell)"`
 }
 
 func (s *Server) handleListDocumentation(ctx context.Context, req *mcp.CallToolRequest, args listDocumentationArgs) (*mcp.CallToolResult, any, error) {
-	base := docsBasePath()
-	if _, err := os.Stat(base); os.IsNotExist(err) {
+	entries, err := cachedDocIndex.fetch()
+	if err != nil {
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{
-					Text: fmt.Sprintf("Documentation directory not found at %s. Set MYTHIC_DOCS_PATH env var if docs are at a different location.", base),
+					Text: fmt.Sprintf("Failed to fetch documentation: %v\nSet MYTHIC_DOCS_URL env var if the documentation server is at a different address (default: %s).", err, defaultDocsURL),
 				},
 			},
 		}, nil, nil
 	}
 
-	type category struct {
-		Name    string     `json:"category"`
-		Entries []docEntry `json:"entries"`
-	}
-
-	categories := []string{"Agents", "C2 Profiles", "Wrappers"}
-	var result []category
-	for _, cat := range categories {
-		catPath := filepath.Join(base, cat)
-		if _, err := os.Stat(catPath); os.IsNotExist(err) {
-			continue
-		}
-		entries := buildDocTree(base, cat)
-		if len(entries) > 0 {
-			result = append(result, category{Name: cat, Entries: entries})
-		}
-	}
-
-	if len(result) == 0 {
+	if len(entries) == 0 {
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{Text: "No documentation found."},
@@ -122,12 +141,29 @@ func (s *Server) handleListDocumentation(ctx context.Context, req *mcp.CallToolR
 		}, nil, nil
 	}
 
+	// Build a tree from flat URIs
+	root := &docTreeNode{Name: "root"}
+	for _, e := range entries {
+		path := uriToPath(e.URI)
+		if path == "" || path == "categories" || path == "tags" {
+			continue
+		}
+		insertIntoTree(root, path, e.Title)
+	}
+
+	// Render as categorized tree text
 	var sb strings.Builder
 	sb.WriteString("Available Mythic Documentation\n")
 	sb.WriteString("==============================\n\n")
-	for _, cat := range result {
-		sb.WriteString(fmt.Sprintf("## %s\n", cat.Name))
-		writeTree(&sb, cat.Entries, "")
+
+	// Sort top-level children for consistent output
+	sort.Slice(root.Children, func(i, j int) bool {
+		return root.Children[i].Name < root.Children[j].Name
+	})
+
+	for _, cat := range root.Children {
+		sb.WriteString(fmt.Sprintf("## %s\n", cat.Title))
+		writeDocTree(&sb, cat.Children, "")
 		sb.WriteString("\n")
 	}
 
@@ -135,45 +171,72 @@ func (s *Server) handleListDocumentation(ctx context.Context, req *mcp.CallToolR
 		Content: []mcp.Content{
 			&mcp.TextContent{Text: sb.String()},
 		},
-	}, result, nil
+	}, root.Children, nil
 }
 
-func writeTree(sb *strings.Builder, entries []docEntry, indent string) {
-	for i, e := range entries {
+func insertIntoTree(root *docTreeNode, path, title string) {
+	parts := strings.Split(path, "/")
+	current := root
+	for i, part := range parts {
+		found := false
+		for _, child := range current.Children {
+			if child.Name == part {
+				current = child
+				found = true
+				break
+			}
+		}
+		if !found {
+			fullPath := strings.Join(parts[:i+1], "/")
+			node := &docTreeNode{
+				Name:  part,
+				Path:  fullPath,
+				Title: part,
+			}
+			current.Children = append(current.Children, node)
+			current = node
+		}
+	}
+	// Set the title and mark as documented for the leaf
+	current.Title = title
+	current.HasDoc = true
+}
+
+func writeDocTree(sb *strings.Builder, nodes []*docTreeNode, indent string) {
+	sort.Slice(nodes, func(i, j int) bool {
+		return nodes[i].Name < nodes[j].Name
+	})
+	for i, n := range nodes {
 		connector := "|- "
 		childIndent := indent + "|  "
-		if i == len(entries)-1 {
+		if i == len(nodes)-1 {
 			connector = "\\- "
 			childIndent = indent + "   "
 		}
-		pages := listPages(filepath.Join(docsBasePath(), e.Path))
-		pageSuffix := ""
-		if len(pages) > 0 {
-			pageSuffix = fmt.Sprintf(" (%d pages)", len(pages))
+		suffix := ""
+		if len(n.Children) > 0 {
+			suffix = fmt.Sprintf(" (%d sub-pages)", countLeaves(n))
 		}
-		sb.WriteString(fmt.Sprintf("%s%s%s%s\n", indent, connector, e.Name, pageSuffix))
-		if len(e.Children) > 0 {
-			writeTree(sb, e.Children, childIndent)
+		displayName := n.Title
+		if displayName == "" {
+			displayName = n.Name
+		}
+		sb.WriteString(fmt.Sprintf("%s%s%s  [path: \"%s\"]%s\n", indent, connector, displayName, n.Path, suffix))
+		if len(n.Children) > 0 {
+			writeDocTree(sb, n.Children, childIndent)
 		}
 	}
 }
 
-func listPages(dirPath string) []string {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return nil
+func countLeaves(n *docTreeNode) int {
+	if len(n.Children) == 0 {
+		return 1
 	}
-	var pages []string
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
-			continue
-		}
-		if e.Name() == "_index.md" {
-			continue
-		}
-		pages = append(pages, strings.TrimSuffix(e.Name(), ".md"))
+	count := 0
+	for _, c := range n.Children {
+		count += countLeaves(c)
 	}
-	return pages
+	return count
 }
 
 func (s *Server) handleGetDocumentation(ctx context.Context, req *mcp.CallToolRequest, args getDocumentationArgs) (*mcp.CallToolResult, any, error) {
@@ -181,75 +244,76 @@ func (s *Server) handleGetDocumentation(ctx context.Context, req *mcp.CallToolRe
 		return nil, nil, fmt.Errorf("path is required")
 	}
 
-	base := docsBasePath()
-	cleaned := filepath.Clean(args.Path)
-	if strings.Contains(cleaned, "..") {
-		return nil, nil, fmt.Errorf("invalid path")
-	}
-
-	target := filepath.Join(base, cleaned)
-
-	info, err := os.Stat(target)
-	if err != nil && os.IsNotExist(err) {
-		// try appending .md
-		mdPath := target + ".md"
-		if content, readErr := os.ReadFile(mdPath); readErr == nil {
-			return &mcp.CallToolResult{
-				Content: []mcp.Content{
-					&mcp.TextContent{Text: string(content)},
-				},
-			}, nil, nil
-		}
-		return nil, nil, fmt.Errorf("documentation not found at path: %s", cleaned)
-	}
+	entries, err := cachedDocIndex.fetch()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to access documentation: %w", err)
+		return nil, nil, fmt.Errorf("failed to fetch documentation: %w", err)
 	}
 
-	var sb strings.Builder
+	// Normalize requested path
+	requested := strings.Trim(strings.ToLower(args.Path), "/")
+	// Also support the old-style path format with spaces (e.g. "C2 Profiles/http")
+	requested = strings.ReplaceAll(requested, " ", "-")
 
-	if info.IsDir() {
-		indexPath := filepath.Join(target, "_index.md")
-		if indexContent, readErr := os.ReadFile(indexPath); readErr == nil {
-			sb.WriteString(string(indexContent))
-			sb.WriteString("\n\n")
+	// Find exact match first, then prefix matches
+	var exactMatch *docIndexEntry
+	var prefixMatches []docIndexEntry
+	for _, e := range entries {
+		entryPath := strings.ToLower(uriToPath(e.URI))
+		if entryPath == requested {
+			exactMatch = &e
+			break
+		}
+		if strings.HasPrefix(entryPath, requested+"/") {
+			prefixMatches = append(prefixMatches, e)
+		}
+	}
+
+	if exactMatch != nil {
+		content := exactMatch.Content
+		if content == "" {
+			content = fmt.Sprintf("# %s\n\n%s", exactMatch.Title, exactMatch.Description)
 		}
 
-		dirEntries, _ := os.ReadDir(target)
-		var subPages []string
-		var subDirs []string
-		for _, e := range dirEntries {
-			if e.IsDir() {
-				subDirs = append(subDirs, e.Name())
-			} else if strings.HasSuffix(e.Name(), ".md") && e.Name() != "_index.md" {
-				subPages = append(subPages, strings.TrimSuffix(e.Name(), ".md"))
+		// If this is a "directory" node, also list children
+		var childList []string
+		for _, e := range entries {
+			ep := uriToPath(e.URI)
+			if strings.HasPrefix(strings.ToLower(ep), requested+"/") {
+				// Direct children only (one level deeper)
+				remainder := strings.TrimPrefix(strings.ToLower(ep), requested+"/")
+				if !strings.Contains(remainder, "/") && remainder != "" {
+					childList = append(childList, fmt.Sprintf("- %s  [path: \"%s\"]", e.Title, ep))
+				}
 			}
 		}
 
-		if len(subPages) > 0 || len(subDirs) > 0 {
-			sb.WriteString("---\n## Available Sub-Pages\n\n")
-			for _, p := range subPages {
-				sb.WriteString(fmt.Sprintf("- %s (path: \"%s/%s\")\n", p, cleaned, p))
-			}
-			for _, d := range subDirs {
-				sb.WriteString(fmt.Sprintf("- %s/ (path: \"%s/%s\")\n", d, cleaned, d))
-			}
+		if len(childList) > 0 {
+			content += "\n\n---\n## Sub-Pages\n\n" + strings.Join(childList, "\n")
 		}
-	} else {
-		content, readErr := os.ReadFile(target)
-		if readErr != nil {
-			return nil, nil, fmt.Errorf("failed to read documentation: %w", readErr)
-		}
-		sb.WriteString(string(content))
+
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{Text: content},
+			},
+		}, exactMatch, nil
 	}
 
-	if sb.Len() == 0 {
-		return nil, nil, fmt.Errorf("documentation not found at path: %s", cleaned)
+	// No exact match — if we have prefix matches, show the "directory" listing
+	if len(prefixMatches) > 0 {
+		var sb strings.Builder
+		sb.WriteString(fmt.Sprintf("## Documentation under \"%s\"\n\n", args.Path))
+		for _, e := range prefixMatches {
+			ep := uriToPath(e.URI)
+			sb.WriteString(fmt.Sprintf("- %s  [path: \"%s\"]\n", e.Title, ep))
+		}
+		sb.WriteString(fmt.Sprintf("\nUse mythic_get_documentation with one of the paths above to read the full content."))
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{Text: sb.String()},
+			},
+		}, prefixMatches, nil
 	}
 
-	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{Text: sb.String()},
-		},
-	}, nil, nil
+	return nil, nil, fmt.Errorf("documentation not found at path: %s", args.Path)
 }
+
