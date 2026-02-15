@@ -214,17 +214,17 @@ func (s *Server) handleCreateC2Instance(ctx context.Context, req *mcp.CallToolRe
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully created C2 instance '%s' for profile ID %d",
-					args.InstanceName, args.C2ProfileID),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully created C2 instance '%s' for profile ID %d",
+						args.InstanceName, args.C2ProfileID),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"instance_name": args.InstanceName,
-		"c2profile_id":  args.C2ProfileID,
-		"success":       true,
-	}, nil
+		}, map[string]interface{}{
+			"instance_name": args.InstanceName,
+			"c2profile_id":  args.C2ProfileID,
+			"success":       true,
+		}, nil
 }
 
 // handleImportC2Instance imports a C2 instance from configuration
@@ -241,17 +241,17 @@ func (s *Server) handleImportC2Instance(ctx context.Context, req *mcp.CallToolRe
 	}
 
 	return &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully imported C2 instance '%s' for profile '%s'",
-					args.InstanceName, args.C2ProfileName),
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: fmt.Sprintf("Successfully imported C2 instance '%s' for profile '%s'",
+						args.InstanceName, args.C2ProfileName),
+				},
 			},
-		},
-	}, map[string]interface{}{
-		"instance_name":  args.InstanceName,
-		"c2profile_name": args.C2ProfileName,
-		"success":        true,
-	}, nil
+		}, map[string]interface{}{
+			"instance_name":  args.InstanceName,
+			"c2profile_name": args.C2ProfileName,
+			"success":        true,
+		}, nil
 }
 
 // handleStartC2Profile starts a C2 profile

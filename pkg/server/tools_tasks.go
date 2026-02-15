@@ -19,20 +19,28 @@ func (s *Server) registerTasksTools() {
 
 	// mythic_issue_task - Issue a task to a callback
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_issue_task",
-		Description: "Issue a task/command to a callback (agent). For script_only commands from a different payload type (e.g. forge commands loaded in a xenon callback), use mythic_issue_script_only_task instead or set payload_type explicitly.",
+		Name: "mythic_issue_task",
+		Description: "Issue a task/command to a callback (agent). Executes agent-side commands " +
+			"(commands compiled into the agent binary). For server-side script_only commands " +
+			"(e.g. forge_collections, forge_download), use mythic_issue_script_only_task instead. " +
+			"To issue a command from a different payload type than the callback's native type, " +
+			"set the payload_type parameter explicitly.",
 	}, s.handleIssueTask)
 
 	// mythic_issue_script_only_task - Issue a script_only (server-side) task
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_issue_script_only_task",
-		Description: "Issue a script_only command to a callback. Script_only commands run server-side (not on the agent). The payload type is auto-discovered from the callback's loaded commands. Use this for commands like forge_collections, forge_download, etc.",
+		Name: "mythic_issue_script_only_task",
+		Description: "Issue a script_only command to a callback. Script_only commands run " +
+			"server-side (NOT on the agent) and are typically from a different payload type " +
+			"(e.g. forge commands loaded in a xenon callback). The payload type is auto-discovered " +
+			"from the callback's loaded commands. Use mythic_get_loaded_commands to see which " +
+			"script_only commands are available (look for script_only: true in the response).",
 	}, s.handleIssueScriptOnlyTask)
 
 	// mythic_get_task - Get task details
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_task",
-		Description: "Get details of a specific task by ID",
+		Description: "Get details of a specific task by its display_id (the number shown in the Mythic UI)",
 	}, s.handleGetTask)
 
 	// mythic_update_task - Update task properties
@@ -141,16 +149,16 @@ func (s *Server) registerTasksTools() {
 // Tool argument types for task tools
 
 type issueTaskArgs struct {
-	CallbackID  int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
-	Command     string `json:"command" jsonschema:"Command name to execute"`
-	Params      string `json:"params" jsonschema:"Command parameters. Accepts JSON objects (recommended for multi-parameter commands) or plain strings. JSON example: {\"target\": \"127.0.0.1\", \"tcp_port\": 4444}. Plain string example: 'whoami' or 'ls -la /tmp'. Use JSON for commands with multiple/optional/typed parameters to avoid ambiguity. Use plain strings for simple single-value parameters (shell, mkdir, kill). Leave empty for commands with no parameters (pwd, ps, ifconfig, etc.)"`
+	CallbackID  int    `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI). Get this from mythic_get_callbacks or mythic_get_active_callbacks display_id field. Do NOT use the internal database id."`
+	Command     string `json:"command" jsonschema:"Command name to execute. Use mythic_get_loaded_commands to see available commands for a callback, or mythic_get_payload_type_commands for all commands of a payload type."`
+	Params      string `json:"params" jsonschema:"Command parameters. Format depends on the command: (1) JSON object for multi-parameter commands: {\"path\": \"/etc/passwd\"} or {\"collectionName\": \"SharpCollection\", \"commandName\": \"Rubeus\"}. (2) Plain string for single-argument commands: 'whoami' or 'ls -la /tmp'. (3) Empty string for no-parameter commands (pwd, ps, ifconfig). Use mythic_get_command_with_parameters to see a command's parameter schema. Boolean params use true/false, number params use integers."`
 	PayloadType string `json:"payload_type,omitempty" jsonschema:"Optional: payload type name for cross-type tasking (e.g. 'forge' when issuing a forge command to a xenon callback). If omitted, the callback's native payload type is assumed."`
 }
 
 type issueScriptOnlyTaskArgs struct {
-	CallbackID         int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
-	Command            string `json:"command" jsonschema:"Script-only command name to execute (e.g. forge_collections, forge_download)"`
-	Params             string `json:"params,omitempty" jsonschema:"Command parameters as JSON or plain string. Leave empty for commands with no parameters."`
+	CallbackID         int    `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI). Get this from mythic_get_callbacks or mythic_get_active_callbacks display_id field. Do NOT use the internal database id."`
+	Command            string `json:"command" jsonschema:"Script-only command name to execute (e.g. forge_collections, forge_download). Must be loaded in the callback — use mythic_get_loaded_commands and look for script_only: true."`
+	Params             string `json:"params,omitempty" jsonschema:"Command parameters as JSON object or plain string. Example JSON: {\"collectionName\": \"SharpCollection\", \"commandName\": \"Rubeus\"}. Leave empty for commands with no parameters. Use mythic_get_command_with_parameters to see the parameter schema."`
 	ParameterGroupName string `json:"parameter_group_name,omitempty" jsonschema:"Optional: specific parameter group to use"`
 }
 
@@ -164,12 +172,12 @@ type updateTaskArgs struct {
 }
 
 type getCallbackTasksArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 	Limit      int `json:"limit,omitempty" jsonschema:"Maximum number of tasks to return (default 100)"`
 }
 
 type getTasksByStatusArgs struct {
-	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int    `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 	Status     string `json:"status" jsonschema:"Task status to filter by (submitted, processing, completed, error, etc.)"`
 	Limit      int    `json:"limit,omitempty" jsonschema:"Maximum number of tasks to return (default 100)"`
 }
@@ -205,7 +213,7 @@ type getTaskResponsesArgs struct {
 }
 
 type getCallbackResponsesArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 	Limit      int `json:"limit,omitempty" jsonschema:"Maximum number of responses to return (default 100)"`
 }
 
@@ -659,12 +667,12 @@ func (s *Server) handleReissueTask(ctx context.Context, req *mcp.CallToolRequest
 	}
 
 	return &mcp.CallToolResult{
-			Content: []mcp.Content{
-				&mcp.TextContent{
-					Text: fmt.Sprintf("Successfully reissued task %d as new task %d (%s %s)\n\n%s", args.TaskID, newTask.DisplayID, newTask.CommandName, newTask.Params, string(data)),
-				},
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: fmt.Sprintf("Successfully reissued task %d as new task %d (%s %s)\n\n%s", args.TaskID, newTask.DisplayID, newTask.CommandName, newTask.Params, string(data)),
 			},
-		}, newTask, nil
+		},
+	}, newTask, nil
 }
 
 // handleReissueTaskWithHandler reissues a task with handler
@@ -680,12 +688,12 @@ func (s *Server) handleReissueTaskWithHandler(ctx context.Context, req *mcp.Call
 	}
 
 	return &mcp.CallToolResult{
-			Content: []mcp.Content{
-				&mcp.TextContent{
-					Text: fmt.Sprintf("Successfully reissued task %d with handler as new task %d (%s %s)\n\n%s", args.TaskID, newTask.DisplayID, newTask.CommandName, newTask.Params, string(data)),
-				},
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: fmt.Sprintf("Successfully reissued task %d with handler as new task %d (%s %s)\n\n%s", args.TaskID, newTask.DisplayID, newTask.CommandName, newTask.Params, string(data)),
 			},
-		}, newTask, nil
+		},
+	}, newTask, nil
 }
 
 // handleGetTaskArtifacts retrieves artifacts for a task

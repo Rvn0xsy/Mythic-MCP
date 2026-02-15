@@ -316,4 +316,3 @@ func (s *Server) handleGetDocumentation(ctx context.Context, req *mcp.CallToolRe
 
 	return nil, nil, fmt.Errorf("documentation not found at path: %s", args.Path)
 }
-

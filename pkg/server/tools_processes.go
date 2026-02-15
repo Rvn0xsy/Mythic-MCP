@@ -50,11 +50,11 @@ type getProcessesByOperationArgs struct {
 }
 
 type getProcessesByCallbackArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 }
 
 type getProcessTreeArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 }
 
 type getProcessesByHostArgs struct {

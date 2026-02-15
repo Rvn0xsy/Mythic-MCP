@@ -53,7 +53,7 @@ func (s *Server) registerScreenshotsTools() {
 // Tool argument types for screenshot tools
 
 type getScreenshotsArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 	Limit      int `json:"limit" jsonschema:"Maximum number of screenshots to retrieve"`
 }
 
@@ -62,7 +62,7 @@ type getScreenshotByIDArgs struct {
 }
 
 type getScreenshotTimelineArgs struct {
-	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int    `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 	StartTime  string `json:"start_time" jsonschema:"Start time in RFC3339 format"`
 	EndTime    string `json:"end_time" jsonschema:"End time in RFC3339 format"`
 }

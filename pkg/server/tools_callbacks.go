@@ -26,7 +26,7 @@ func (s *Server) registerCallbacksTools() {
 	// mythic_get_callback - Get specific callback
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_callback",
-		Description: "Get details of a specific callback by ID",
+		Description: "Get details of a specific callback by its display_id (the number shown in the Mythic UI)",
 	}, s.handleGetCallback)
 
 	// mythic_update_callback - Update callback
@@ -43,8 +43,12 @@ func (s *Server) registerCallbacksTools() {
 
 	// mythic_get_loaded_commands - Get loaded commands
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_get_loaded_commands",
-		Description: "Get list of commands loaded in a specific callback",
+		Name: "mythic_get_loaded_commands",
+		Description: "Get all commands loaded in a callback, including both the agent's built-in commands " +
+			"and any dynamically loaded commands (e.g. forge script_only commands). Each command " +
+			"includes its payload_type_name (which agent it belongs to) and script_only flag " +
+			"(whether it runs server-side or on the agent). Use mythic_get_payload_type_commands " +
+			"to see all commands for a payload type without needing a callback.",
 	}, s.handleGetLoadedCommands)
 
 	// mythic_export_callback_config - Export callback config
@@ -88,11 +92,11 @@ type getAllCallbacksArgs struct{}
 type getActiveCallbacksArgs struct{}
 
 type getCallbackArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback to retrieve"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 }
 
 type updateCallbackArgs struct {
-	CallbackID  int      `json:"callback_id" jsonschema:"Display ID of the callback to update"`
+	CallbackID  int      `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 	Active      *bool    `json:"active,omitempty" jsonschema:"Set callback active/inactive status"`
 	Locked      *bool    `json:"locked,omitempty" jsonschema:"Lock/unlock callback for tasking"`
 	Description *string  `json:"description,omitempty" jsonschema:"Set callback description"`
@@ -102,11 +106,11 @@ type updateCallbackArgs struct {
 }
 
 type deleteCallbackArgs struct {
-	CallbackIDs []int `json:"callback_ids" jsonschema:"Array of callback IDs to delete"`
+	CallbackIDs []int `json:"callback_ids" jsonschema:"Array of callback display_ids (the numbers shown in the Mythic UI, not internal database ids)"`
 }
 
 type getLoadedCommandsArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 }
 
 type exportCallbackConfigArgs struct {
@@ -118,7 +122,7 @@ type importCallbackConfigArgs struct {
 }
 
 type getCallbackTokensArgs struct {
-	CallbackID int `json:"callback_id" jsonschema:"Display ID of the callback"`
+	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`
 }
 
 type addCallbackEdgeArgs struct {
