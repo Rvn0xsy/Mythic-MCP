@@ -1,0 +1,122 @@
+site_name: Mythic MCP Server
+site_url: https://nbaertsch.github.io/Mythic-MCP/
+site_description: >-
+  AI-powered red team operations — a production MCP server for the
+  Mythic C2 Framework, exposing 148 tools to AI assistants.
+site_author: nbaertsch
+repo_url: https://github.com/nbaertsch/Mythic-MCP
+repo_name: nbaertsch/Mythic-MCP
+edit_uri: edit/main/site/
+
+copyright: Copyright &copy; 2025-2026 nbaertsch
+
+theme:
+  name: material
+  custom_dir: site/overrides
+  logo: assets/mythic-mcp-logo.svg
+  favicon: assets/mythic-mcp-logo.svg
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nbaertsch/Mythic-MCP
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+docs_dir: site/content
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Configuration: getting-started/configuration.md
+      - Claude Desktop: getting-started/claude-desktop.md
+  - Architecture: architecture.md
+  - Tool Reference:
+      - tools/index.md
+      - Authentication: tools/authentication.md
+      - Operations: tools/operations.md
+      - Operators: tools/operators.md
+      - Callbacks: tools/callbacks.md
+      - Tasks & Responses: tools/tasks.md
+      - Payloads: tools/payloads.md
+      - Payload Discovery: tools/payload-discovery.md
+      - C2 Profiles: tools/c2-profiles.md
+      - Commands: tools/commands.md
+      - Files: tools/files.md
+      - Credentials & Artifacts: tools/credentials.md
+      - MITRE ATT&CK: tools/mitre-attack.md
+      - Hosts: tools/hosts.md
+      - Processes: tools/processes.md
+      - Screenshots: tools/screenshots.md
+      - Keylogs: tools/keylogs.md
+      - Tags: tools/tags.md
+      - Documentation: tools/documentation.md
+  - Showcase:
+      - showcase/index.md
+      - Lab Walkthrough: showcase/lab-walkthrough.md
+  - Contributing: contributing.md

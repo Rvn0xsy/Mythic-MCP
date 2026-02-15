@@ -36,3 +36,7 @@ bin/
 mythic-mcp
 *.tar.gz
 *.zip
+
+# MkDocs build output
+_site/
+gen-schema-docs
