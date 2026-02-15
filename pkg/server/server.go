@@ -152,4 +152,7 @@ func (s *Server) registerTools() {
 
 	// Phase 5: Documentation tools
 	s.registerDocumentationTools()
+
+	// Phase 6: Bulk operation tools
+	s.registerBulkTools()
 }

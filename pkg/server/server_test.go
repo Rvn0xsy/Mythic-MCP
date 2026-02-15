@@ -190,6 +190,9 @@ func TestPayloadDiscoveryToolsRegistered(t *testing.T) {
 		"mythic_get_payload_type_build_parameters",
 		"mythic_get_c2_profile_parameters",
 		"mythic_get_payload_type_commands",
+		"mythic_issue_task_bulk",
+		"mythic_get_tasks_batch",
+		"mythic_search_tasks",
 	}
 
 	for _, toolName := range expectedTools {

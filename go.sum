@@ -57,6 +57,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 h1:Esafd1046DLD
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/nbaertsch/mythic-sdk-go v0.0.0-20260215173226-e0ec99e55877 h1:pAMxj7SWc6ZAFi2hHyt0YUZwdRYu0n5+HgQMSTeqc5Q=
 github.com/nbaertsch/mythic-sdk-go v0.0.0-20260215173226-e0ec99e55877/go.mod h1:sR/XMW2oKPlsKCGzccJQkNOQtIcmgbJaTknghJKGMuI=
+github.com/nbaertsch/mythic-sdk-go v0.0.0-20260215185854-3fd6c50d6922 h1:bfvYlTQIIU50DohqQfL31VUjwNff0bGZMafos8v8KLQ=
+github.com/nbaertsch/mythic-sdk-go v0.0.0-20260215185854-3fd6c50d6922/go.mod h1:sR/XMW2oKPlsKCGzccJQkNOQtIcmgbJaTknghJKGMuI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
