@@ -20,8 +20,14 @@ func (s *Server) registerTasksTools() {
 	// mythic_issue_task - Issue a task to a callback
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_issue_task",
-		Description: "Issue a task/command to a callback (agent)",
+		Description: "Issue a task/command to a callback (agent). For script_only commands from a different payload type (e.g. forge commands loaded in a xenon callback), use mythic_issue_script_only_task instead or set payload_type explicitly.",
 	}, s.handleIssueTask)
+
+	// mythic_issue_script_only_task - Issue a script_only (server-side) task
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "mythic_issue_script_only_task",
+		Description: "Issue a script_only command to a callback. Script_only commands run server-side (not on the agent). The payload type is auto-discovered from the callback's loaded commands. Use this for commands like forge_collections, forge_download, etc.",
+	}, s.handleIssueScriptOnlyTask)
 
 	// mythic_get_task - Get task details
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
@@ -135,9 +141,17 @@ func (s *Server) registerTasksTools() {
 // Tool argument types for task tools
 
 type issueTaskArgs struct {
-	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
-	Command    string `json:"command" jsonschema:"Command name to execute"`
-	Params     string `json:"params" jsonschema:"Command parameters. Accepts JSON objects (recommended for multi-parameter commands) or plain strings. JSON example: {\"target\": \"127.0.0.1\", \"tcp_port\": 4444}. Plain string example: 'whoami' or 'ls -la /tmp'. Use JSON for commands with multiple/optional/typed parameters to avoid ambiguity. Use plain strings for simple single-value parameters (shell, mkdir, kill). Leave empty for commands with no parameters (pwd, ps, ifconfig, etc.)"`
+	CallbackID  int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
+	Command     string `json:"command" jsonschema:"Command name to execute"`
+	Params      string `json:"params" jsonschema:"Command parameters. Accepts JSON objects (recommended for multi-parameter commands) or plain strings. JSON example: {\"target\": \"127.0.0.1\", \"tcp_port\": 4444}. Plain string example: 'whoami' or 'ls -la /tmp'. Use JSON for commands with multiple/optional/typed parameters to avoid ambiguity. Use plain strings for simple single-value parameters (shell, mkdir, kill). Leave empty for commands with no parameters (pwd, ps, ifconfig, etc.)"`
+	PayloadType string `json:"payload_type,omitempty" jsonschema:"Optional: payload type name for cross-type tasking (e.g. 'forge' when issuing a forge command to a xenon callback). If omitted, the callback's native payload type is assumed."`
+}
+
+type issueScriptOnlyTaskArgs struct {
+	CallbackID         int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
+	Command            string `json:"command" jsonschema:"Script-only command name to execute (e.g. forge_collections, forge_download)"`
+	Params             string `json:"params,omitempty" jsonschema:"Command parameters as JSON or plain string. Leave empty for commands with no parameters."`
+	ParameterGroupName string `json:"parameter_group_name,omitempty" jsonschema:"Optional: specific parameter group to use"`
 }
 
 type getTaskArgs struct {
@@ -263,12 +277,20 @@ func (s *Server) handleIssueTask(ctx context.Context, req *mcp.CallToolRequest, 
 	// Smart parameter resolution: handles both plain strings and JSON objects,
 	// and auto-converts space-separated strings into structured JSON for
 	// multi-argument commands by looking up the command's parameter schema.
-	params := s.resolveTaskParams(ctx, callbackID, args.Command, args.Params)
+	var payloadTypeForResolve *string
+	if args.PayloadType != "" {
+		payloadTypeForResolve = &args.PayloadType
+	}
+	params := s.resolveTaskParams(ctx, callbackID, args.Command, args.Params, payloadTypeForResolve)
 
 	issueReq := &mythic.TaskRequest{
 		CallbackID: &callbackID,
 		Command:    args.Command,
 		Params:     params,
+	}
+	if args.PayloadType != "" {
+		pt := args.PayloadType
+		issueReq.PayloadType = &pt
 	}
 
 	task, err := s.mythicClient.IssueTask(ctx, issueReq)
@@ -291,6 +313,35 @@ func (s *Server) handleIssueTask(ctx context.Context, req *mcp.CallToolRequest, 
 	}, task, nil
 }
 
+// handleIssueScriptOnlyTask issues a script_only command to a callback
+func (s *Server) handleIssueScriptOnlyTask(ctx context.Context, req *mcp.CallToolRequest, args issueScriptOnlyTaskArgs) (*mcp.CallToolResult, any, error) {
+	scriptReq := &mythic.ScriptOnlyTaskRequest{
+		CallbackID:         args.CallbackID,
+		Command:            args.Command,
+		Params:             args.Params,
+		ParameterGroupName: args.ParameterGroupName,
+	}
+
+	task, err := s.mythicClient.IssueScriptOnlyTask(ctx, scriptReq)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	data, err := json.MarshalIndent(task, "", "  ")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: fmt.Sprintf("Successfully issued script_only task %d to callback %d\nCommand: %s\nStatus: %s\n\n%s",
+					task.DisplayID, args.CallbackID, args.Command, task.Status, string(data)),
+			},
+		},
+	}, task, nil
+}
+
 // resolveTaskParams handles smart parameter parsing for task commands.
 //
 // The logic is:
@@ -302,7 +353,7 @@ func (s *Server) handleIssueTask(ctx context.Context, req *mcp.CallToolRequest, 
 //     c. If the command has structured parameters → split the string positionally
 //     and map values to named parameters with type coercion
 //     d. If schema lookup fails → fall back to normalizeParams (Issue #6 compat)
-func (s *Server) resolveTaskParams(ctx context.Context, callbackID int, command, params string) string {
+func (s *Server) resolveTaskParams(ctx context.Context, callbackID int, command, params string, payloadType *string) string {
 	if len(params) == 0 {
 		return params
 	}
@@ -321,7 +372,22 @@ func (s *Server) resolveTaskParams(ctx context.Context, callbackID int, command,
 		return normalizeParams(params)
 	}
 
-	cmdWithParams, err := s.mythicClient.GetCommandWithParameters(ctx, callback.PayloadTypeID, command)
+	// Use the specified payload type's ID if provided, otherwise use the callback's native type
+	ptID := callback.PayloadTypeID
+	if payloadType != nil && *payloadType != "" {
+		// Look up the payload type ID by name from loaded commands
+		loadedCmds, err := s.mythicClient.GetLoadedCommands(ctx, callbackID)
+		if err == nil {
+			for _, lc := range loadedCmds {
+				if lc.Command != nil && lc.Command.PayloadTypeName == *payloadType {
+					ptID = lc.Command.PayloadTypeID
+					break
+				}
+			}
+		}
+	}
+
+	cmdWithParams, err := s.mythicClient.GetCommandWithParameters(ctx, ptID, command)
 	if err != nil {
 		log.Printf("[resolveTaskParams] failed to get command schema for %q: %v (falling back to normalizeParams)", command, err)
 		return normalizeParams(params)
