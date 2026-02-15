@@ -171,7 +171,7 @@ func (s *Server) handleListDocumentation(ctx context.Context, req *mcp.CallToolR
 		Content: []mcp.Content{
 			&mcp.TextContent{Text: sb.String()},
 		},
-	}, root.Children, nil
+	}, wrapList(root.Children), nil
 }
 
 func insertIntoTree(root *docTreeNode, path, title string) {
@@ -311,7 +311,7 @@ func (s *Server) handleGetDocumentation(ctx context.Context, req *mcp.CallToolRe
 			Content: []mcp.Content{
 				&mcp.TextContent{Text: sb.String()},
 			},
-		}, prefixMatches, nil
+		}, wrapList(prefixMatches), nil
 	}
 
 	return nil, nil, fmt.Errorf("documentation not found at path: %s", args.Path)
