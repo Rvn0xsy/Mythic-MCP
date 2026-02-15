@@ -149,7 +149,7 @@ type getHostArtifactsArgs struct {
 }
 
 type getArtifactsByTypeArgs struct {
-	ArtifactType string `json:"artifact_type" jsonschema:"Artifact base_artifact type to filter by (e.g. ProcessCreate, FileWrite, API). Case-insensitive partial match."` 
+	ArtifactType string `json:"artifact_type" jsonschema:"Artifact base_artifact type to filter by (e.g. ProcessCreate, FileWrite, API). Case-insensitive partial match."`
 }
 
 type createArtifactArgs struct {

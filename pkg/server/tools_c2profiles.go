@@ -23,7 +23,7 @@ func (s *Server) registerC2ProfilesTools() {
 
 	// mythic_get_c2_profile - Get specific C2 profile with configuration
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_get_c2_profile",
+		Name: "mythic_get_c2_profile",
 		Description: "Get details of a specific C2 profile by ID, including its current configuration " +
 			"parameter values (callback_host, callback_port, etc.) and whether it is currently running.",
 	}, s.handleGetC2Profile)
@@ -116,6 +116,7 @@ type getC2ProfileOutputArgs struct {
 type c2HostFileArgs struct {
 	ProfileID int    `json:"profile_id" jsonschema:"ID of the C2 profile"`
 	FileUUID  string `json:"file_uuid" jsonschema:"UUID of the file to host"`
+	HostURL   string `json:"host_url" jsonschema:"URL path where the file will be hosted (e.g. /download/file.exe)"`
 }
 
 type c2SampleMessageArgs struct {
@@ -324,7 +325,7 @@ func (s *Server) handleGetC2ProfileOutput(ctx context.Context, req *mcp.CallTool
 
 // handleC2HostFile hosts a file on a C2 profile
 func (s *Server) handleC2HostFile(ctx context.Context, req *mcp.CallToolRequest, args c2HostFileArgs) (*mcp.CallToolResult, any, error) {
-	err := s.mythicClient.C2HostFile(ctx, args.ProfileID, args.FileUUID)
+	err := s.mythicClient.C2HostFile(ctx, args.ProfileID, args.FileUUID, args.HostURL)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}
@@ -332,12 +333,13 @@ func (s *Server) handleC2HostFile(ctx context.Context, req *mcp.CallToolRequest,
 	return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{
-					Text: fmt.Sprintf("Successfully hosted file %s on C2 profile %d", args.FileUUID, args.ProfileID),
+					Text: fmt.Sprintf("Successfully hosted file %s on C2 profile %d at %s", args.FileUUID, args.ProfileID, args.HostURL),
 				},
 			},
 		}, map[string]interface{}{
 			"profile_id": args.ProfileID,
 			"file_uuid":  args.FileUUID,
+			"host_url":   args.HostURL,
 			"success":    true,
 		}, nil
 }
