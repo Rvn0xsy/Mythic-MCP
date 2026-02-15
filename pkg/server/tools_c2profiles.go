@@ -98,8 +98,9 @@ type createC2InstanceArgs struct {
 }
 
 type importC2InstanceArgs struct {
-	Name   string `json:"name" jsonschema:"Name for the imported C2 instance"`
-	Config string `json:"config" jsonschema:"JSON configuration data to import"`
+	C2ProfileName string `json:"c2profile_name" jsonschema:"Name of the C2 profile type (e.g. http, httpx)"`
+	InstanceName  string `json:"instance_name" jsonschema:"Name for this imported C2 instance"`
+	C2Instance    string `json:"c2_instance" jsonschema:"JSON string of the instance configuration"`
 }
 
 type startC2ProfileArgs struct {
@@ -229,28 +230,28 @@ func (s *Server) handleCreateC2Instance(ctx context.Context, req *mcp.CallToolRe
 // handleImportC2Instance imports a C2 instance from configuration
 func (s *Server) handleImportC2Instance(ctx context.Context, req *mcp.CallToolRequest, args importC2InstanceArgs) (*mcp.CallToolResult, any, error) {
 	importReq := &types.ImportC2InstanceRequest{
-		Name:   args.Name,
-		Config: args.Config,
+		C2ProfileName: args.C2ProfileName,
+		InstanceName:  args.InstanceName,
+		C2Instance:    args.C2Instance,
 	}
 
-	profile, err := s.mythicClient.ImportC2Instance(ctx, importReq)
+	err := s.mythicClient.ImportC2Instance(ctx, importReq)
 	if err != nil {
 		return nil, nil, translateError(err)
-	}
-
-	data, err := json.MarshalIndent(profile, "", "  ")
-	if err != nil {
-		return nil, nil, err
 	}
 
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully imported C2 instance\nProfile: %s\nID: %d\n\n%s",
-					profile.Name, profile.ID, string(data)),
+				Text: fmt.Sprintf("Successfully imported C2 instance '%s' for profile '%s'",
+					args.InstanceName, args.C2ProfileName),
 			},
 		},
-	}, profile, nil
+	}, map[string]interface{}{
+		"instance_name":  args.InstanceName,
+		"c2profile_name": args.C2ProfileName,
+		"success":        true,
+	}, nil
 }
 
 // handleStartC2Profile starts a C2 profile
