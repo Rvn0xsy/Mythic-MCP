@@ -44,32 +44,14 @@ func TestE2E_Commands_GetCommandParameters(t *testing.T) {
 func TestE2E_Commands_GetCommandWithParameters(t *testing.T) {
 	setup := SetupE2ETest(t)
 
-	// Get payload types first
-	payloadTypes, err := setup.MythicClient.GetPayloadTypes(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(payloadTypes) == 0 {
-		t.Skip("No payload types available to test")
-	}
-
-	payloadTypeID := payloadTypes[0].ID
-
-	// Get commands for this payload type
+	// Choose a command first, then use its payload_type_id.
 	commands, err := setup.MythicClient.GetCommands(setup.Ctx)
 	require.NoError(t, err)
+	require.NotEmpty(t, commands, "Expected at least one command in Mythic")
 
-	// Find a command for this payload type
-	var commandName string
-	for _, cmd := range commands {
-		if cmd.PayloadTypeID == payloadTypeID {
-			commandName = cmd.Cmd
-			break
-		}
-	}
-
-	if commandName == "" {
-		t.Skip("No commands available for this payload type")
-	}
+	cmd := commands[0]
+	payloadTypeID := cmd.PayloadTypeID
+	commandName := cmd.Cmd
 
 	// Get command with parameters
 	result, err := setup.CallMCPTool("mythic_get_command_with_parameters", map[string]interface{}{

@@ -8,8 +8,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 )
+
+const e2eFindAPITokenIDQuery = `
+query FindAPITokenID($token_value: String!) {
+  apitokens(where: {token_value: {_eq: $token_value}, deleted: {_eq: false}}, limit: 1) {
+    id
+  }
+}
+`
 
 func TestE2E_Auth_LoginLogout(t *testing.T) {
 	setup := SetupE2ETest(t)
@@ -79,6 +88,7 @@ func TestE2E_Auth_APITokens(t *testing.T) {
 	require.NoError(t, err)
 
 	var tokenID int
+	var tokenValue string
 
 	t.Run("CreateAPIToken", func(t *testing.T) {
 		result, err := setup.CallMCPTool("mythic_create_api_token", map[string]interface{}{
@@ -87,21 +97,43 @@ func TestE2E_Auth_APITokens(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, result)
 
-		// Extract token ID for cleanup
-		if resultData, ok := result["result"].(map[string]interface{}); ok {
-			if content, ok := resultData["content"].([]interface{}); ok && len(content) > 0 {
-				// Parse token ID from content
-				// This is simplified - actual parsing will depend on response format
-				tokenID = 1 // Placeholder
-			}
+		meta, ok := result["metadata"].(map[string]interface{})
+		require.True(t, ok, "Expected metadata in create api token result")
+		val, ok := meta["token_value"].(string)
+		require.True(t, ok && val != "", "Expected metadata.token_value to be a non-empty string")
+		tokenValue = val
+
+		// Resolve the token's database ID so we can delete it.
+		resp, err := setup.MythicClient.ExecuteRawGraphQL(setup.Ctx, e2eFindAPITokenIDQuery, map[string]interface{}{
+			"token_value": tokenValue,
+		})
+		require.NoError(t, err)
+		if errs, ok := resp["errors"]; ok {
+			t.Fatalf("GraphQL errors while resolving apitoken id: %v", errs)
 		}
+
+		// ExecuteRawGraphQL may return either the raw GraphQL envelope ({data:{...}})
+		// or, depending on upstream behavior, a flattened object. Handle both.
+		dataAny := resp["data"]
+		if dataAny == nil {
+			dataAny = resp
+		}
+		data, ok := dataAny.(map[string]interface{})
+		require.True(t, ok, "Expected data object in GraphQL response")
+
+		rows, ok := data["apitokens"].([]interface{})
+		require.True(t, ok, "Expected apitokens array in GraphQL response")
+		require.NotEmpty(t, rows, "Expected to find created api token by token_value")
+		row, ok := rows[0].(map[string]interface{})
+		require.True(t, ok)
+		idFloat, ok := row["id"].(float64)
+		require.True(t, ok)
+		tokenID = int(idFloat)
+		require.NotZero(t, tokenID, "Expected to resolve token_id for created token")
 	})
 
 	t.Run("DeleteAPIToken", func(t *testing.T) {
-		if tokenID == 0 {
-			t.Skip("No token ID available")
-		}
-
+		require.NotZero(t, tokenID, "Expected token_id to be set by CreateAPIToken")
 		result, err := setup.CallMCPTool("mythic_delete_api_token", map[string]interface{}{
 			"token_id": tokenID,
 		})

@@ -115,7 +115,14 @@ func (s *Server) handleGetKeylogsByOperation(ctx context.Context, req *mcp.CallT
 
 // handleGetKeylogsByCallback retrieves keylogs for a callback
 func (s *Server) handleGetKeylogsByCallback(ctx context.Context, req *mcp.CallToolRequest, args getKeylogsByCallbackArgs) (*mcp.CallToolResult, any, error) {
-	keylogs, err := s.mythicClient.GetKeylogsByCallback(ctx, args.CallbackID)
+	// Args are callback display_id; SDK keylog queries filter on task.callback_id
+	// which is the internal callback.id.
+	callback, err := s.mythicClient.GetCallbackByID(ctx, args.CallbackID)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	keylogs, err := s.mythicClient.GetKeylogsByCallback(ctx, callback.ID)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}

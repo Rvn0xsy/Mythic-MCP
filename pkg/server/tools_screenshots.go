@@ -83,7 +83,14 @@ type deleteScreenshotArgs struct {
 
 // handleGetScreenshots retrieves screenshots for a callback
 func (s *Server) handleGetScreenshots(ctx context.Context, req *mcp.CallToolRequest, args getScreenshotsArgs) (*mcp.CallToolResult, any, error) {
-	screenshots, err := s.mythicClient.GetScreenshots(ctx, args.CallbackID, args.Limit)
+	// Args are callback display_id; SDK screenshot queries filter on task.callback_id
+	// which is the internal callback.id.
+	callback, err := s.mythicClient.GetCallbackByID(ctx, args.CallbackID)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	screenshots, err := s.mythicClient.GetScreenshots(ctx, callback.ID, args.Limit)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}
@@ -147,7 +154,13 @@ func (s *Server) handleGetScreenshotTimeline(ctx context.Context, req *mcp.CallT
 		return nil, nil, fmt.Errorf("invalid end_time format (expected RFC3339, e.g. 2025-01-15T18:00:00Z): %w", err)
 	}
 
-	screenshots, err := s.mythicClient.GetScreenshotTimeline(ctx, args.CallbackID, &startTime, &endTime)
+	// Args are callback display_id; SDK screenshot timeline queries expect internal callback.id.
+	callback, err := s.mythicClient.GetCallbackByID(ctx, args.CallbackID)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	screenshots, err := s.mythicClient.GetScreenshotTimeline(ctx, callback.ID, &startTime, &endTime)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}
