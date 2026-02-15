@@ -28,8 +28,12 @@
 
 Mythic MCP Server exposes every meaningful operation in the [Mythic C2 Framework](https://github.com/its-a-feature/Mythic) as a structured [Model Context Protocol](https://modelcontextprotocol.io) tool. Connect it to Claude, ChatGPT, or any MCP client and operate Mythic through natural language.
 
-```
-AI Assistant  ──MCP──▶  Mythic MCP Server  ──SDK──▶  Mythic C2
+```mermaid
+flowchart LR
+    A["🤖 AI Assistant"] -- MCP --> B["⚡ Mythic MCP Server"]
+    B -- SDK --> C["🎯 Mythic C2"]
+    C -- GraphQL + REST --> B
+    B -- MCP --> A
 ```
 
 ### Capabilities
@@ -119,12 +123,21 @@ See the full [Getting Started guide](https://nbaertsch.github.io/Mythic-MCP/gett
 
 ## Architecture
 
-```
-┌──────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  MCP Client  │────▶│  Mythic MCP      │────▶│  Mythic C2      │
-│  (Claude,    │ MCP │  Server           │ SDK │  Framework      │
-│   ChatGPT)   │◀────│  147 tools        │◀────│  GraphQL + REST │
-└──────────────┘     └──────────────────┘     └─────────────────┘
+```mermaid
+flowchart LR
+    subgraph Client["MCP Client"]
+        CL["Claude / ChatGPT"]
+    end
+    subgraph Server["Mythic MCP Server"]
+        T["147 Tools\n18 Categories"]
+    end
+    subgraph Mythic["Mythic C2 Framework"]
+        API["GraphQL + REST"]
+    end
+    CL -- "MCP (stdio / HTTP)" --> T
+    T -- "Go SDK" --> API
+    API -- responses --> T
+    T -- results --> CL
 ```
 
 The server is a thin, type-safe translation layer. Each tool validates inputs against a JSON Schema derived from Go struct tags, calls the [Mythic Go SDK](https://github.com/nbaertsch/mythic-sdk-go), and returns structured results.
