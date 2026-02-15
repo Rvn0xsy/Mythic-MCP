@@ -38,7 +38,7 @@ func (s *Server) registerCallbacksTools() {
 	// mythic_delete_callback - Delete callback
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_delete_callback",
-		Description: "Delete one or more callbacks from Mythic",
+		Description: "Delete one or more callbacks from Mythic. Admin users perform a hard delete (removes callbacks and tasks from the database). Non-admin users perform a soft delete (sets active=false, dead=true), since hard deletion requires the mythic_admin role.",
 	}, s.handleDeleteCallback)
 
 	// mythic_get_loaded_commands - Get loaded commands
