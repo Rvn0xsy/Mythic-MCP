@@ -49,8 +49,11 @@ func (s *Server) registerCallbacksTools() {
 
 	// mythic_export_callback_config - Export callback config
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_export_callback_config",
-		Description: "Export a callback's configuration as JSON",
+		Name: "mythic_export_callback_config",
+		Description: "Export a callback's configuration as JSON. " +
+			"IMPORTANT: The agent_callback_id parameter requires the callback's UUID string " +
+			"(e.g. 'eebbb756-3e16-42b4-88d8-1a01f3e5e320'), NOT the display_id number. " +
+			"Use mythic_get_callbacks to find the agent_callback_id (UUID) for a callback.",
 	}, s.handleExportCallbackConfig)
 
 	// mythic_import_callback_config - Import callback config
@@ -107,7 +110,7 @@ type getLoadedCommandsArgs struct {
 }
 
 type exportCallbackConfigArgs struct {
-	AgentCallbackID string `json:"agent_callback_id" jsonschema:"Agent callback UUID to export"`
+	AgentCallbackID string `json:"agent_callback_id" jsonschema:"Callback UUID string (NOT display_id number). Get this from mythic_get_callbacks agent_callback_id field."`
 }
 
 type importCallbackConfigArgs struct {

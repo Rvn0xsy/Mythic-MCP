@@ -36,8 +36,9 @@ func (s *Server) registerHostsTools() {
 
 	// mythic_get_callbacks_for_host - Get callbacks on a host
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_get_callbacks_for_host",
-		Description: "Get all callbacks (agents) running on a specific host",
+		Name: "mythic_get_callbacks_for_host",
+		Description: "Get all callbacks (agents) running on a specific host, searched by hostname. " +
+			"Use mythic_get_hosts to find available hostnames.",
 	}, s.handleGetCallbacksForHost)
 }
 
@@ -60,7 +61,7 @@ type getHostNetworkMapArgs struct {
 }
 
 type getCallbacksForHostArgs struct {
-	HostID int `json:"host_id" jsonschema:"ID of the host"`
+	Hostname string `json:"hostname" jsonschema:"Hostname to search for (case-insensitive). Get hostnames from mythic_get_hosts or mythic_get_callbacks."`
 }
 
 // Tool handlers
@@ -166,7 +167,7 @@ func (s *Server) handleGetHostNetworkMap(ctx context.Context, req *mcp.CallToolR
 
 // handleGetCallbacksForHost retrieves callbacks running on a host
 func (s *Server) handleGetCallbacksForHost(ctx context.Context, req *mcp.CallToolRequest, args getCallbacksForHostArgs) (*mcp.CallToolResult, any, error) {
-	callbacks, err := s.mythicClient.GetCallbacksForHost(ctx, args.HostID)
+	callbacks, err := s.mythicClient.GetCallbacksForHost(ctx, args.Hostname)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}
@@ -186,7 +187,7 @@ func (s *Server) handleGetCallbacksForHost(ctx context.Context, req *mcp.CallToo
 		statusMap[status]++
 	}
 
-	summary := fmt.Sprintf("Callbacks on host %d (%d total):\n\n", args.HostID, len(callbacks))
+	summary := fmt.Sprintf("Callbacks on host %s (%d total):\n\n", args.Hostname, len(callbacks))
 	summary += "Breakdown by status:\n"
 	for status, count := range statusMap {
 		summary += fmt.Sprintf("  - %s: %d callback(s)\n", status, count)

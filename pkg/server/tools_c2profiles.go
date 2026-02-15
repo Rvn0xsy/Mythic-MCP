@@ -64,8 +64,10 @@ func (s *Server) registerC2ProfilesTools() {
 
 	// mythic_c2_host_file - Host a file on C2 profile
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_c2_host_file",
-		Description: "Host a file on a C2 profile for agent download",
+		Name: "mythic_c2_host_file",
+		Description: "Host a file on a C2 profile for agent download. " +
+			"Requires the C2 profile ID (from mythic_get_c2_profiles), the file UUID, " +
+			"and the URL path where the file will be served.",
 	}, s.handleC2HostFile)
 
 	// mythic_c2_sample_message - Get sample C2 message
