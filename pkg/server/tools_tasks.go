@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic"
@@ -252,10 +255,16 @@ func normalizeParams(params string) string {
 // handleIssueTask issues a task to a callback
 func (s *Server) handleIssueTask(ctx context.Context, req *mcp.CallToolRequest, args issueTaskArgs) (*mcp.CallToolResult, any, error) {
 	callbackID := args.CallbackID
+
+	// Smart parameter resolution: handles both plain strings and JSON objects,
+	// and auto-converts space-separated strings into structured JSON for
+	// multi-argument commands by looking up the command's parameter schema.
+	params := s.resolveTaskParams(ctx, callbackID, args.Command, args.Params)
+
 	issueReq := &mythic.TaskRequest{
 		CallbackID: &callbackID,
 		Command:    args.Command,
-		Params:     normalizeParams(args.Params),
+		Params:     params,
 	}
 
 	task, err := s.mythicClient.IssueTask(ctx, issueReq)
@@ -276,6 +285,142 @@ func (s *Server) handleIssueTask(ctx context.Context, req *mcp.CallToolRequest, 
 			},
 		},
 	}, task, nil
+}
+
+// resolveTaskParams handles smart parameter parsing for task commands.
+//
+// The logic is:
+//  1. Empty params → pass through
+//  2. Params is valid JSON object/array → pass through (the SDK and Mythic handle it)
+//  3. Params is a plain string:
+//     a. Look up the command schema from Mythic
+//     b. If it's a raw-string command (e.g. shell, run) → pass the string as-is
+//     c. If the command has structured parameters → split the string positionally
+//     and map values to named parameters with type coercion
+//     d. If schema lookup fails → fall back to normalizeParams (Issue #6 compat)
+func (s *Server) resolveTaskParams(ctx context.Context, callbackID int, command, params string) string {
+	if len(params) == 0 {
+		return params
+	}
+
+	trimmed := strings.TrimSpace(params)
+
+	// Already valid JSON → pass through directly (don't unwrap structured params)
+	if len(trimmed) > 0 && (trimmed[0] == '{' || trimmed[0] == '[') && json.Valid([]byte(trimmed)) {
+		return params
+	}
+
+	// Plain string input — try to look up the command schema
+	callback, err := s.mythicClient.GetCallbackByID(ctx, callbackID)
+	if err != nil {
+		log.Printf("[resolveTaskParams] failed to get callback %d: %v (falling back to normalizeParams)", callbackID, err)
+		return normalizeParams(params)
+	}
+
+	cmdWithParams, err := s.mythicClient.GetCommandWithParameters(ctx, callback.PayloadTypeID, command)
+	if err != nil {
+		log.Printf("[resolveTaskParams] failed to get command schema for %q: %v (falling back to normalizeParams)", command, err)
+		return normalizeParams(params)
+	}
+
+	// Raw-string commands take the string as-is
+	if cmdWithParams.IsRawStringCommand() {
+		return params
+	}
+
+	// No parameters defined — pass through
+	if len(cmdWithParams.Parameters) == 0 {
+		return params
+	}
+
+	// Parse space-separated values into structured JSON
+	structured, err := parsePositionalParams(trimmed, cmdWithParams.Parameters)
+	if err != nil {
+		log.Printf("[resolveTaskParams] positional parse failed for %q %q: %v (passing as-is)", command, params, err)
+		return params
+	}
+
+	jsonBytes, err := json.Marshal(structured)
+	if err != nil {
+		log.Printf("[resolveTaskParams] JSON marshal failed: %v (passing as-is)", err)
+		return params
+	}
+
+	log.Printf("[resolveTaskParams] parsed %q params: %q -> %s", command, params, string(jsonBytes))
+	return string(jsonBytes)
+}
+
+// parsePositionalParams maps space-separated values to named command parameters.
+// Parameters are filled in order: required parameters first (preserving their
+// original order), then optional parameters. Type coercion is applied based on
+// the parameter's declared type.
+func parsePositionalParams(input string, parameters []*types.CommandParameter) (map[string]interface{}, error) {
+	parts := strings.Fields(input)
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("empty input")
+	}
+
+	// Build ordered list: required params first, then optional
+	var required []*types.CommandParameter
+	var optional []*types.CommandParameter
+	for _, p := range parameters {
+		if p.Required {
+			required = append(required, p)
+		} else {
+			optional = append(optional, p)
+		}
+	}
+	ordered := append(required, optional...)
+
+	result := make(map[string]interface{})
+
+	for i, part := range parts {
+		if i >= len(ordered) {
+			// More values than parameters — join remainder into the last param
+			lastParam := ordered[len(ordered)-1]
+			if existingStr, ok := result[lastParam.Name].(string); ok {
+				result[lastParam.Name] = existingStr + " " + strings.Join(parts[i:], " ")
+			} else {
+				result[lastParam.Name] = strings.Join(parts[i:], " ")
+			}
+			break
+		}
+
+		param := ordered[i]
+		val, err := coerceValue(part, param.Type)
+		if err != nil {
+			return nil, fmt.Errorf("parameter %q: %w", param.Name, err)
+		}
+		result[param.Name] = val
+	}
+
+	return result, nil
+}
+
+// coerceValue converts a string value to the appropriate Go type based on
+// the Mythic command parameter type.
+func coerceValue(value, paramType string) (interface{}, error) {
+	switch paramType {
+	case types.ParameterTypeNumber:
+		if i, err := strconv.ParseInt(value, 10, 64); err == nil {
+			return i, nil
+		}
+		if f, err := strconv.ParseFloat(value, 64); err == nil {
+			return f, nil
+		}
+		return nil, fmt.Errorf("cannot parse %q as number", value)
+	case types.ParameterTypeBoolean:
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse %q as boolean", value)
+		}
+		return b, nil
+	case types.ParameterTypeString, types.ParameterTypeChooseOne:
+		return value, nil
+	default:
+		// Complex types (Array, File, Credential, LinkInfo, etc.) — pass as string
+		return value, nil
+	}
 }
 
 // handleGetTask retrieves a specific task by ID
