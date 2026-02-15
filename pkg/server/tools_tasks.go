@@ -376,7 +376,8 @@ func (s *Server) resolveTaskParams(ctx context.Context, callbackID int, command,
 	ptID := callback.PayloadTypeID
 	if payloadType != nil && *payloadType != "" {
 		// Look up the payload type ID by name from loaded commands
-		loadedCmds, err := s.mythicClient.GetLoadedCommands(ctx, callbackID)
+		// Use callback.ID (internal ID) for GraphQL query, not the display_id
+		loadedCmds, err := s.mythicClient.GetLoadedCommands(ctx, callback.ID)
 		if err == nil {
 			for _, lc := range loadedCmds {
 				if lc.Command != nil && lc.Command.PayloadTypeName == *payloadType {
