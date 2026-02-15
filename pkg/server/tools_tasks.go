@@ -61,14 +61,18 @@ func (s *Server) registerTasksTools() {
 
 	// mythic_reissue_task - Reissue a task
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_reissue_task",
-		Description: "Reissue a task with the same parameters",
+		Name: "mythic_reissue_task",
+		Description: "[UNSUPPORTED] Reissue a task with the same parameters. " +
+			"NOTE: The Mythic server has this mutation in its GraphQL schema but returns " +
+			"'Function not implemented' at runtime. This tool is non-functional until Mythic implements it server-side.",
 	}, s.handleReissueTask)
 
 	// mythic_reissue_task_with_handler - Reissue task with handler
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "mythic_reissue_task_with_handler",
-		Description: "Reissue a task with handler for callback structure updates",
+		Name: "mythic_reissue_task_with_handler",
+		Description: "[UNSUPPORTED] Reissue a task with handler for callback structure updates. " +
+			"NOTE: The Mythic server has this mutation in its GraphQL schema but returns " +
+			"'Function not implemented' at runtime. This tool is non-functional until Mythic implements it server-side.",
 	}, s.handleReissueTaskWithHandler)
 
 	// mythic_get_task_artifacts - Get task artifacts

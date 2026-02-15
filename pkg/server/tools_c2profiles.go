@@ -90,10 +90,9 @@ type getC2ProfileArgs struct {
 }
 
 type createC2InstanceArgs struct {
-	Name        string                 `json:"name" jsonschema:"Name for the C2 profile instance"`
-	Description string                 `json:"description,omitempty" jsonschema:"Description of the C2 instance"`
-	Parameters  map[string]interface{} `json:"parameters,omitempty" jsonschema:"C2 profile parameters configuration (key-value pairs)"`
-	OperationID int                    `json:"operation_id,omitempty" jsonschema:"Operation ID for the C2 instance"`
+	C2ProfileID  int    `json:"c2profile_id" jsonschema:"ID of the C2 profile to create an instance of"`
+	InstanceName string `json:"instance_name" jsonschema:"Name for this C2 profile instance"`
+	C2Instance   string `json:"c2_instance" jsonschema:"JSON string of the instance configuration"`
 }
 
 type importC2InstanceArgs struct {
@@ -201,38 +200,28 @@ func (s *Server) handleGetC2Profile(ctx context.Context, req *mcp.CallToolReques
 // handleCreateC2Instance creates a new C2 profile instance
 func (s *Server) handleCreateC2Instance(ctx context.Context, req *mcp.CallToolRequest, args createC2InstanceArgs) (*mcp.CallToolResult, any, error) {
 	createReq := &types.CreateC2InstanceRequest{
-		Name: args.Name,
+		C2ProfileID:  args.C2ProfileID,
+		InstanceName: args.InstanceName,
+		C2Instance:   args.C2Instance,
 	}
 
-	// Optional fields
-	if args.Description != "" {
-		createReq.Description = &args.Description
-	}
-	if args.Parameters != nil {
-		createReq.Parameters = args.Parameters
-	}
-	if args.OperationID > 0 {
-		createReq.OperationID = &args.OperationID
-	}
-
-	profile, err := s.mythicClient.CreateC2Instance(ctx, createReq)
+	err := s.mythicClient.CreateC2Instance(ctx, createReq)
 	if err != nil {
 		return nil, nil, translateError(err)
-	}
-
-	data, err := json.MarshalIndent(profile, "", "  ")
-	if err != nil {
-		return nil, nil, err
 	}
 
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{
-				Text: fmt.Sprintf("Successfully created C2 instance\nProfile: %s\nID: %d\n\n%s",
-					profile.Name, profile.ID, string(data)),
+				Text: fmt.Sprintf("Successfully created C2 instance '%s' for profile ID %d",
+					args.InstanceName, args.C2ProfileID),
 			},
 		},
-	}, profile, nil
+	}, map[string]interface{}{
+		"instance_name": args.InstanceName,
+		"c2profile_id":  args.C2ProfileID,
+		"success":       true,
+	}, nil
 }
 
 // handleImportC2Instance imports a C2 instance from configuration
