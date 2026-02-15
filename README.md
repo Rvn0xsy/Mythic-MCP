@@ -129,7 +129,8 @@ flowchart LR
         CL["Claude / ChatGPT"]
     end
     subgraph Server["Mythic MCP Server"]
-        T["147 Tools\n18 Categories"]
+        T["`147 Tools
+18 Categories`"]
     end
     subgraph Mythic["Mythic C2 Framework"]
         API["GraphQL + REST"]
