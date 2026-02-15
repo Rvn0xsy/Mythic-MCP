@@ -209,7 +209,7 @@ func (s *Server) handleDownloadFile(ctx context.Context, req *mcp.CallToolReques
 	if fs := s.FileStore(); fs != nil {
 		resp, err := fs.StoreFile(fileData, args.FileUUID+".bin", filestore.FileTypeDownload, "application/octet-stream")
 		if err != nil {
-			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+			return nil, nil, fmt.Errorf("failed to store file %s locally: %w", args.FileUUID, err)
 		}
 		data, _ := json.MarshalIndent(resp, "", "  ")
 		return &mcp.CallToolResult{

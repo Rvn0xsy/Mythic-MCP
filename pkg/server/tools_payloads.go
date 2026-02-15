@@ -483,7 +483,7 @@ func (s *Server) handleDownloadPayload(ctx context.Context, req *mcp.CallToolReq
 		filename := args.PayloadUUID + ".bin"
 		resp, err := fs.StoreFile(payloadData, filename, filestore.FileTypePayload, "application/octet-stream")
 		if err != nil {
-			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+			return nil, nil, fmt.Errorf("failed to store payload %s locally: %w", args.PayloadUUID, err)
 		}
 		data, _ := json.MarshalIndent(resp, "", "  ")
 		return &mcp.CallToolResult{

@@ -7,7 +7,10 @@ import (
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic"
 )
 
-// translateError converts Mythic SDK errors to user-friendly error messages
+// translateError converts Mythic SDK errors to user-friendly error messages.
+// The SDK's WrapError already provides rich context (operation, resource ID,
+// specific message), so we preserve that detail and only add hints for
+// authentication errors where extra guidance is useful.
 func translateError(err error) error {
 	if err == nil {
 		return nil
@@ -16,19 +19,26 @@ func translateError(err error) error {
 	// Check for specific Mythic SDK errors
 	switch {
 	case errors.Is(err, mythic.ErrNotAuthenticated):
-		return fmt.Errorf("not authenticated with Mythic server - please check credentials")
+		return fmt.Errorf("%v — check credentials and ensure the Mythic server is running", err)
 
 	case errors.Is(err, mythic.ErrAuthenticationFailed):
-		return fmt.Errorf("authentication failed - invalid credentials or server unreachable")
+		return fmt.Errorf("%v — invalid credentials or server unreachable", err)
 
 	case errors.Is(err, mythic.ErrNotFound):
-		return fmt.Errorf("requested resource not found")
+		// SDK already says e.g. "GetCallbackByID: callback with display_id 7 not found: not found"
+		return err
 
 	case errors.Is(err, mythic.ErrInvalidInput):
-		return fmt.Errorf("invalid input parameters")
+		// SDK already says e.g. "IssueTask: command is required: invalid input"
+		return err
 
 	case errors.Is(err, mythic.ErrTimeout):
-		return fmt.Errorf("request timed out - Mythic server may be slow or unreachable")
+		// SDK already says e.g. "WaitForTaskComplete: task 5 did not complete within 60s: request timeout"
+		return err
+
+	case errors.Is(err, mythic.ErrTaskFailed):
+		// SDK already says e.g. "WaitForTaskComplete: task failed with stderr: ..."
+		return err
 
 	default:
 		// Return original error with context

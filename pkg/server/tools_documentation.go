@@ -314,5 +314,5 @@ func (s *Server) handleGetDocumentation(ctx context.Context, req *mcp.CallToolRe
 		}, wrapList(prefixMatches), nil
 	}
 
-	return nil, nil, fmt.Errorf("documentation not found at path: %s", args.Path)
+	return nil, nil, fmt.Errorf("documentation not found at path: %s — use mythic_list_documentation or mythic_search_documentation to discover valid paths", args.Path)
 }

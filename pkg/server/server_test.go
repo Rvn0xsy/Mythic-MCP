@@ -78,7 +78,7 @@ func TestTranslateError(t *testing.T) {
 		{
 			name:     "timeout",
 			err:      mythic.ErrTimeout,
-			contains: "timed out",
+			contains: "request timeout",
 		},
 		{
 			name:     "generic error",

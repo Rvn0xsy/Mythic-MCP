@@ -139,12 +139,12 @@ func (s *Server) handleGetScreenshotTimeline(ctx context.Context, req *mcp.CallT
 	// Parse times
 	startTime, err := time.Parse(time.RFC3339, args.StartTime)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid start_time format: %w", err)
+		return nil, nil, fmt.Errorf("invalid start_time format (expected RFC3339, e.g. 2025-01-15T10:00:00Z): %w", err)
 	}
 
 	endTime, err := time.Parse(time.RFC3339, args.EndTime)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid end_time format: %w", err)
+		return nil, nil, fmt.Errorf("invalid end_time format (expected RFC3339, e.g. 2025-01-15T18:00:00Z): %w", err)
 	}
 
 	screenshots, err := s.mythicClient.GetScreenshotTimeline(ctx, args.CallbackID, &startTime, &endTime)
@@ -181,7 +181,7 @@ func (s *Server) handleGetScreenshotThumbnail(ctx context.Context, req *mcp.Call
 		filename := args.AgentFileID + "_thumb.png"
 		resp, err := fs.StoreFile(thumbnailData, filename, filestore.FileTypeScreenshot, "image/png")
 		if err != nil {
-			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+			return nil, nil, fmt.Errorf("failed to store screenshot thumbnail %s locally: %w", args.AgentFileID, err)
 		}
 		data, _ := json.MarshalIndent(resp, "", "  ")
 		return &mcp.CallToolResult{
@@ -223,7 +223,7 @@ func (s *Server) handleDownloadScreenshot(ctx context.Context, req *mcp.CallTool
 		filename := args.AgentFileID + ".png"
 		resp, err := fs.StoreFile(screenshotData, filename, filestore.FileTypeScreenshot, "image/png")
 		if err != nil {
-			return nil, nil, fmt.Errorf("file vending failed: %w", err)
+			return nil, nil, fmt.Errorf("failed to store screenshot %s locally: %w", args.AgentFileID, err)
 		}
 		data, _ := json.MarshalIndent(resp, "", "  ")
 		return &mcp.CallToolResult{
