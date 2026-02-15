@@ -92,10 +92,10 @@ func (s *Server) registerArtifactsTools() {
 		Description: "Update an existing artifact's properties",
 	}, s.handleUpdateArtifact)
 
-	// mythic_delete_artifact - Delete artifact (not supported by Mythic API)
+	// mythic_delete_artifact - Delete artifact (soft delete by marking resolved)
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_delete_artifact",
-		Description: "[UNSUPPORTED] Artifact deletion is not supported by the Mythic API. This tool will always return an error. Use mythic_update_artifact to modify artifacts instead.",
+		Description: "Delete (resolve) an artifact by marking it as resolved and no longer needing cleanup. This is a soft delete since Mythic does not support hard artifact deletion.",
 	}, s.handleDeleteArtifact)
 }
 

@@ -581,40 +581,44 @@ func (s *Server) handleGetTaskOutput(ctx context.Context, req *mcp.CallToolReque
 
 // handleReissueTask reissues a task
 func (s *Server) handleReissueTask(ctx context.Context, req *mcp.CallToolRequest, args reissueTaskArgs) (*mcp.CallToolResult, any, error) {
-	err := s.mythicClient.ReissueTask(ctx, args.TaskID)
+	newTask, err := s.mythicClient.ReissueTask(ctx, args.TaskID)
 	if err != nil {
 		return nil, nil, translateError(err)
+	}
+
+	data, err := json.MarshalIndent(newTask, "", "  ")
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{
-					Text: fmt.Sprintf("Successfully reissued task %d", args.TaskID),
+					Text: fmt.Sprintf("Successfully reissued task %d as new task %d (%s %s)\n\n%s", args.TaskID, newTask.DisplayID, newTask.CommandName, newTask.Params, string(data)),
 				},
 			},
-		}, map[string]interface{}{
-			"task_id": args.TaskID,
-			"success": true,
-		}, nil
+		}, newTask, nil
 }
 
 // handleReissueTaskWithHandler reissues a task with handler
 func (s *Server) handleReissueTaskWithHandler(ctx context.Context, req *mcp.CallToolRequest, args reissueTaskArgs) (*mcp.CallToolResult, any, error) {
-	err := s.mythicClient.ReissueTaskWithHandler(ctx, args.TaskID)
+	newTask, err := s.mythicClient.ReissueTaskWithHandler(ctx, args.TaskID)
 	if err != nil {
 		return nil, nil, translateError(err)
+	}
+
+	data, err := json.MarshalIndent(newTask, "", "  ")
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return &mcp.CallToolResult{
 			Content: []mcp.Content{
 				&mcp.TextContent{
-					Text: fmt.Sprintf("Successfully reissued task %d with handler", args.TaskID),
+					Text: fmt.Sprintf("Successfully reissued task %d with handler as new task %d (%s %s)\n\n%s", args.TaskID, newTask.DisplayID, newTask.CommandName, newTask.Params, string(data)),
 				},
 			},
-		}, map[string]interface{}{
-			"task_id": args.TaskID,
-			"success": true,
-		}, nil
+		}, newTask, nil
 }
 
 // handleGetTaskArtifacts retrieves artifacts for a task
