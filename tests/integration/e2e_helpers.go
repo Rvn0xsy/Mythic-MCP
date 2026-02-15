@@ -354,11 +354,21 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 			// The MCP SDK puts the second return value in "structuredContent" field
 			var normalizedResult = make(map[string]interface{})
 
-			// Copy structuredContent as both "metadata" and "content" for test compatibility
-			// This field contains the actual domain objects from our tool handlers
+			// Copy structuredContent as "metadata" and normalize "content" for test compatibility.
+			// For list envelopes produced by wrapList ("items" + "count"), expose content
+			// as the underlying items array because many tests expect []interface{}.
 			if structuredContent, ok := result["structuredContent"]; ok {
 				normalizedResult["metadata"] = structuredContent
-				normalizedResult["content"] = structuredContent
+
+				if scMap, isMap := structuredContent.(map[string]interface{}); isMap {
+					if items, hasItems := scMap["items"]; hasItems {
+						normalizedResult["content"] = items
+					} else {
+						normalizedResult["content"] = structuredContent
+					}
+				} else {
+					normalizedResult["content"] = structuredContent
+				}
 			}
 
 			// Also copy MCP Content array (text content) as mcp_content for reference
@@ -388,6 +398,38 @@ func (s *MCPTestSetup) CallMCPTool(toolName string, args map[string]interface{})
 				}
 				return result, nil
 			}
+
+			// Surface MCP tool-level errors as Go errors so tests can assert on err.
+			if isErrorRaw, ok := normalizedResult["isError"]; ok {
+				if isError, ok := isErrorRaw.(bool); ok && isError {
+					if content, ok := normalizedResult["content"].([]interface{}); ok && len(content) > 0 {
+						if first, ok := content[0].(map[string]interface{}); ok {
+							if text, ok := first["text"].(string); ok && text != "" {
+								return nil, fmt.Errorf("%s", text)
+							}
+						}
+					}
+
+				if mcpContent, ok := normalizedResult["mcp_content"].([]interface{}); ok && len(mcpContent) > 0 {
+					if first, ok := mcpContent[0].(map[string]interface{}); ok {
+						if text, ok := first["text"].(string); ok && text != "" {
+							return nil, fmt.Errorf("%s", text)
+						}
+					}
+				}
+
+				return nil, fmt.Errorf("MCP tool returned isError=true")
+			}
+			if isError, ok := isErrorRaw.(float64); ok && isError != 0 {
+				return nil, fmt.Errorf("MCP tool returned isError=true")
+			}
+			if isError, ok := isErrorRaw.(string); ok && isError == "true" {
+				return nil, fmt.Errorf("MCP tool returned isError=true")
+			}
+			if isError, ok := isErrorRaw.(string); ok && isError == "1" {
+				return nil, fmt.Errorf("MCP tool returned isError=true")
+			}
+		}
 
 			// Debug: Print normalized result
 			if os.Getenv("E2E_DEBUG") == "1" {

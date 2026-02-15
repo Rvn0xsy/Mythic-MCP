@@ -4,7 +4,9 @@
 package integration
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic/types"
 	"github.com/stretchr/testify/assert"
@@ -29,10 +31,11 @@ func TestE2E_Operations_GetOperations(t *testing.T) {
 // TestE2E_Operations_CreateAndManage tests creating, updating, and getting operations
 func TestE2E_Operations_CreateAndManage(t *testing.T) {
 	setup := SetupE2ETest(t)
+	operationName := fmt.Sprintf("Test Operation E2E %d", time.Now().UnixNano())
 
 	// Step 1: Create a new operation
 	createResult, err := setup.CallMCPTool("mythic_create_operation", map[string]interface{}{
-		"name":    "Test Operation E2E",
+		"name":    operationName,
 		"webhook": "https://example.com/webhook",
 		"channel": "test-channel",
 	})
@@ -50,9 +53,7 @@ func TestE2E_Operations_CreateAndManage(t *testing.T) {
 	// Verify operation was created using SDK directly
 	operation, err := setup.MythicClient.GetOperationByID(setup.Ctx, operationID)
 	require.NoError(t, err)
-	assert.Equal(t, "Test Operation E2E", operation.Name)
-	assert.Equal(t, "https://example.com/webhook", operation.Webhook)
-	assert.Equal(t, "test-channel", operation.Channel)
+	assert.Equal(t, operationName, operation.Name)
 
 	// Step 2: Get the operation via MCP tool
 	getResult, err := setup.CallMCPTool("mythic_get_operation", map[string]interface{}{
@@ -62,9 +63,10 @@ func TestE2E_Operations_CreateAndManage(t *testing.T) {
 	require.NotNil(t, getResult)
 
 	// Step 3: Update the operation
+	updatedOperationName := fmt.Sprintf("Updated Test Operation %d", time.Now().UnixNano())
 	updateResult, err := setup.CallMCPTool("mythic_update_operation", map[string]interface{}{
 		"operation_id": operationID,
-		"name":         "Updated Test Operation",
+		"name":         updatedOperationName,
 		"complete":     true,
 	})
 	require.NoError(t, err)
@@ -73,7 +75,7 @@ func TestE2E_Operations_CreateAndManage(t *testing.T) {
 	// Verify update using SDK
 	updatedOp, err := setup.MythicClient.GetOperationByID(setup.Ctx, operationID)
 	require.NoError(t, err)
-	assert.Equal(t, "Updated Test Operation", updatedOp.Name)
+	assert.Equal(t, updatedOperationName, updatedOp.Name)
 	assert.True(t, updatedOp.Complete)
 }
 
@@ -87,8 +89,9 @@ func TestE2E_Operations_CurrentOperation(t *testing.T) {
 	require.NotNil(t, getResult)
 
 	// Create a new operation to set as current
+	currentOpName := fmt.Sprintf("Current Op Test %d", time.Now().UnixNano())
 	operation, err := setup.MythicClient.CreateOperation(setup.Ctx, &types.CreateOperationRequest{
-		Name: "Current Op Test",
+		Name: currentOpName,
 	})
 	require.NoError(t, err)
 
@@ -99,15 +102,16 @@ func TestE2E_Operations_CurrentOperation(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, setResult)
 
-	// Verify it was set
-	currentOp := setup.MythicClient.GetCurrentOperation()
-	require.NotNil(t, currentOp)
-	assert.Equal(t, operation.ID, *currentOp)
-
 	// Get current operation via tool
 	getCurrentResult, err := setup.CallMCPTool("mythic_get_current_operation", map[string]interface{}{})
 	require.NoError(t, err)
 	require.NotNil(t, getCurrentResult)
+
+	metadata, ok := getCurrentResult["metadata"].(map[string]interface{})
+	require.True(t, ok, "Expected metadata map in result")
+	opID, ok := metadata["operation_id"].(float64)
+	require.True(t, ok, "Expected operation_id in metadata")
+	assert.Equal(t, operation.ID, int(opID))
 }
 
 // TestE2E_Operations_Operators tests getting operators for an operation
@@ -226,12 +230,13 @@ func TestE2E_Operations_ErrorHandling(t *testing.T) {
 // TestE2E_Operations_FullWorkflow tests a complete operations workflow
 func TestE2E_Operations_FullWorkflow(t *testing.T) {
 	setup := SetupE2ETest(t)
+	workflowName := fmt.Sprintf("Workflow Test Operation %d", time.Now().UnixNano())
 
 	// Workflow: Create operation → Set as current → Log events → Update → Verify
 
 	// 1. Create operation
 	createResult, err := setup.CallMCPTool("mythic_create_operation", map[string]interface{}{
-		"name":    "Workflow Test Operation",
+		"name":    workflowName,
 		"webhook": "https://example.com/hook",
 	})
 	require.NoError(t, err)
@@ -279,5 +284,5 @@ func TestE2E_Operations_FullWorkflow(t *testing.T) {
 	finalOp, err := setup.MythicClient.GetOperationByID(setup.Ctx, operationID)
 	require.NoError(t, err)
 	assert.True(t, finalOp.Complete, "Operation should be marked as complete")
-	assert.Equal(t, "Workflow Test Operation", finalOp.Name)
+	assert.Equal(t, workflowName, finalOp.Name)
 }

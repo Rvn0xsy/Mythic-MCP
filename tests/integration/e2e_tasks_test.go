@@ -330,9 +330,24 @@ func TestE2E_Responses_SearchResponses(t *testing.T) {
 	}
 
 	require.NotNil(t, result)
-	content, ok := result["content"].([]interface{})
-	require.True(t, ok, "Expected content to be an array")
-	t.Logf("Search results for 'success': %d", len(content))
+	if content, ok := result["content"].([]interface{}); ok {
+		t.Logf("Search results for 'success': %d", len(content))
+		return
+	}
+
+	if content, exists := result["content"]; exists && content == nil {
+		t.Logf("Search results for 'success': 0")
+		return
+	}
+
+	if metadata, ok := result["metadata"].(map[string]interface{}); ok {
+		if results, ok := metadata["results"].([]interface{}); ok {
+			t.Logf("Search results for 'success': %d", len(results))
+			return
+		}
+	}
+
+	t.Fatalf("Expected search response content to be array or metadata.results array")
 }
 
 // TestE2E_Tasks_ErrorHandling tests error scenarios

@@ -4,7 +4,10 @@
 package integration
 
 import (
+	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic/types"
 	"github.com/stretchr/testify/assert"
@@ -29,10 +32,11 @@ func TestE2E_Operators_GetOperators(t *testing.T) {
 // TestE2E_Operators_CreateAndManage tests operator creation and management
 func TestE2E_Operators_CreateAndManage(t *testing.T) {
 	setup := SetupE2ETest(t)
+	username := fmt.Sprintf("test-operator-e2e-%d", time.Now().UnixNano())
 
 	// Step 1: Create a new operator
 	createResult, err := setup.CallMCPTool("mythic_create_operator", map[string]interface{}{
-		"username": "test-operator-e2e",
+		"username": username,
 		"password": "TestPassword123!",
 	})
 	require.NoError(t, err)
@@ -81,10 +85,11 @@ func TestE2E_Operators_CreateAndManage(t *testing.T) {
 // TestE2E_Operators_PasswordAndEmail tests password and email updates
 func TestE2E_Operators_PasswordAndEmail(t *testing.T) {
 	setup := SetupE2ETest(t)
+	username := fmt.Sprintf("test-pwd-change-%d", time.Now().UnixNano())
 
 	// Create a test operator
 	operator, err := setup.MythicClient.CreateOperator(setup.Ctx, &types.CreateOperatorRequest{
-		Username: "test-pwd-change",
+		Username: username,
 		Password: "InitialPassword123!",
 	})
 	require.NoError(t, err)
@@ -180,6 +185,9 @@ func TestE2E_Operators_InviteLinks(t *testing.T) {
 		"max_uses": 5,
 		"name":     "Test E2E Invite",
 	})
+	if err != nil && strings.Contains(err.Error(), "Invite links disabled") {
+		t.Skip("Invite links are disabled in this Mythic deployment")
+	}
 	require.NoError(t, err)
 	require.NotNil(t, createResult)
 
@@ -197,6 +205,7 @@ func TestE2E_Operators_InviteLinks(t *testing.T) {
 // TestE2E_Operators_UpdateOperatorOperation tests operator-operation management
 func TestE2E_Operators_UpdateOperatorOperation(t *testing.T) {
 	setup := SetupE2ETest(t)
+	username := fmt.Sprintf("test-op-assignment-%d", time.Now().UnixNano())
 
 	// Get an operation to work with
 	operations, err := setup.MythicClient.GetOperations(setup.Ctx)
@@ -206,7 +215,7 @@ func TestE2E_Operators_UpdateOperatorOperation(t *testing.T) {
 
 	// Create a test operator
 	operator, err := setup.MythicClient.CreateOperator(setup.Ctx, &types.CreateOperatorRequest{
-		Username: "test-op-assignment",
+		Username: username,
 		Password: "TestPassword123!",
 	})
 	require.NoError(t, err)
@@ -285,12 +294,13 @@ func TestE2E_Operators_ErrorHandling(t *testing.T) {
 // TestE2E_Operators_FullWorkflow tests a complete operator workflow
 func TestE2E_Operators_FullWorkflow(t *testing.T) {
 	setup := SetupE2ETest(t)
+	workflowUsername := fmt.Sprintf("workflow-test-operator-%d", time.Now().UnixNano())
 
 	// Workflow: Create operator → Get details → Update prefs → Assign to op → Remove
 
 	// 1. Create operator
 	createResult, err := setup.CallMCPTool("mythic_create_operator", map[string]interface{}{
-		"username": "workflow-test-operator",
+		"username": workflowUsername,
 		"password": "WorkflowTest123!",
 	})
 	require.NoError(t, err)
@@ -351,19 +361,20 @@ func TestE2E_Operators_FullWorkflow(t *testing.T) {
 	finalOp, err := setup.MythicClient.GetOperatorByID(setup.Ctx, operatorID)
 	require.NoError(t, err)
 	assert.False(t, finalOp.Active, "Operator should be deactivated")
-	assert.Equal(t, "workflow-test-operator", finalOp.Username)
+	assert.Equal(t, workflowUsername, finalOp.Username)
 }
 
 // TestE2E_Operators_MultipleOperators tests creating multiple operators
 func TestE2E_Operators_MultipleOperators(t *testing.T) {
 	setup := SetupE2ETest(t)
+	namePrefix := fmt.Sprintf("multi-test-op-%d", time.Now().UnixNano())
 
 	operatorIDs := make([]int, 0, 3)
 
 	// Create 3 operators
 	for i := 1; i <= 3; i++ {
 		createResult, err := setup.CallMCPTool("mythic_create_operator", map[string]interface{}{
-			"username": "multi-test-op-" + string(rune('0'+i)),
+			"username": fmt.Sprintf("%s-%d", namePrefix, i),
 			"password": "MultiTest123!",
 		})
 		require.NoError(t, err)

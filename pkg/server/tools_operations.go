@@ -246,6 +246,10 @@ func (s *Server) handleUpdateOperation(ctx context.Context, req *mcp.CallToolReq
 
 // handleSetCurrentOperation sets the current operation context
 func (s *Server) handleSetCurrentOperation(ctx context.Context, req *mcp.CallToolRequest, args setCurrentOperationArgs) (*mcp.CallToolResult, any, error) {
+	if err := s.mythicClient.UpdateCurrentOperationForUser(ctx, args.OperationID); err != nil {
+		return nil, nil, translateError(err)
+	}
+
 	s.mythicClient.SetCurrentOperation(args.OperationID)
 
 	return &mcp.CallToolResult{
@@ -310,6 +314,22 @@ func (s *Server) handleGetOperationOperators(ctx context.Context, req *mcp.CallT
 
 // handleCreateEventLog creates an event log entry
 func (s *Server) handleCreateEventLog(ctx context.Context, req *mcp.CallToolRequest, args createEventLogArgs) (*mcp.CallToolResult, any, error) {
+	// Ensure the SDK operator context matches the requested operation. In Mythic v3.4.x,
+	// inserted operationeventlog rows are associated with the operator's current operation.
+	previousOperation := s.mythicClient.GetCurrentOperation()
+	if previousOperation == nil || *previousOperation != args.OperationID {
+		if err := s.mythicClient.UpdateCurrentOperationForUser(ctx, args.OperationID); err != nil {
+			return nil, nil, translateError(err)
+		}
+		s.mythicClient.SetCurrentOperation(args.OperationID)
+		defer func() {
+			if previousOperation != nil {
+				_ = s.mythicClient.UpdateCurrentOperationForUser(ctx, *previousOperation)
+				s.mythicClient.SetCurrentOperation(*previousOperation)
+			}
+		}()
+	}
+
 	createReq := &types.CreateOperationEventLogRequest{
 		OperationID: args.OperationID,
 		Message:     args.Message,

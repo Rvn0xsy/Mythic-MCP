@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -65,7 +66,9 @@ type isAuthenticatedArgs struct{}
 
 type getCurrentUserArgs struct{}
 
-type createAPITokenArgs struct{}
+type createAPITokenArgs struct {
+	TokenType *string `json:"token_type,omitempty" jsonschema:"Optional token type for compatibility. Currently only 'User' is supported and other values are ignored by Mythic's API token endpoint."`
+}
 
 type deleteAPITokenArgs struct {
 	TokenID int `json:"token_id" jsonschema:"ID of the token to delete"`
@@ -150,6 +153,10 @@ func (s *Server) handleGetCurrentUser(ctx context.Context, req *mcp.CallToolRequ
 
 // handleCreateAPIToken creates a new API token
 func (s *Server) handleCreateAPIToken(ctx context.Context, req *mcp.CallToolRequest, args createAPITokenArgs) (*mcp.CallToolResult, any, error) {
+	if args.TokenType != nil && *args.TokenType != "" && !strings.EqualFold(*args.TokenType, "User") {
+		return nil, nil, fmt.Errorf("unsupported token_type %q: only 'User' is supported", *args.TokenType)
+	}
+
 	token, err := s.mythicClient.CreateAPIToken(ctx)
 	if err != nil {
 		return nil, nil, translateError(err)
