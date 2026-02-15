@@ -60,7 +60,7 @@ type getAttackTechniqueByTNumArgs struct {
 }
 
 type getAttackByTaskArgs struct {
-	TaskID int `json:"task_id" jsonschema:"Internal ID of the task"`
+	TaskID int `json:"task_id" jsonschema:"Display ID of the task (the number shown in the Mythic UI)"`
 }
 
 type getAttackByCommandArgs struct {
@@ -140,7 +140,13 @@ func (s *Server) handleGetAttackTechniqueByTNum(ctx context.Context, req *mcp.Ca
 
 // handleGetAttackByTask retrieves techniques associated with a task
 func (s *Server) handleGetAttackByTask(ctx context.Context, req *mcp.CallToolRequest, args getAttackByTaskArgs) (*mcp.CallToolResult, any, error) {
-	attackTasks, err := s.mythicClient.GetAttackByTask(ctx, args.TaskID)
+	// Resolve display_id to internal task ID
+	task, err := s.mythicClient.GetTask(ctx, args.TaskID)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	attackTasks, err := s.mythicClient.GetAttackByTask(ctx, task.ID)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}

@@ -133,7 +133,7 @@ func (s *Server) registerTasksTools() {
 type issueTaskArgs struct {
 	CallbackID int    `json:"callback_id" jsonschema:"Display ID of the callback to task"`
 	Command    string `json:"command" jsonschema:"Command name to execute"`
-	Params     string `json:"params" jsonschema:"Command parameters as a plain string exactly as you would type after the command name in the Mythic UI. Examples: for 'shell' pass 'whoami' or 'ls -la /tmp', for 'mkdir' pass '/tmp/newdir', for 'kill' pass '1234', for 'chmod' pass '755 /tmp/file'. Do NOT pass JSON objects. Leave empty for commands with no parameters (pwd, ps, ifconfig, etc.)"`
+	Params     string `json:"params" jsonschema:"Command parameters. Accepts JSON objects (recommended for multi-parameter commands) or plain strings. JSON example: {\"target\": \"127.0.0.1\", \"tcp_port\": 4444}. Plain string example: 'whoami' or 'ls -la /tmp'. Use JSON for commands with multiple/optional/typed parameters to avoid ambiguity. Use plain strings for simple single-value parameters (shell, mkdir, kill). Leave empty for commands with no parameters (pwd, ps, ifconfig, etc.)"`
 }
 
 type getTaskArgs struct {
@@ -178,7 +178,7 @@ type requestOpsecBypassArgs struct {
 }
 
 type addMitreAttackToTaskArgs struct {
-	TaskID      int    `json:"task_id" jsonschema:"Display ID of the task"`
+	TaskID      int    `json:"task_id" jsonschema:"Display ID of the task (the number shown in the Mythic UI)"`
 	TechniqueID string `json:"technique_id" jsonschema:"MITRE ATT&CK technique ID (e.g., T1055)"`
 }
 

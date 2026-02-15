@@ -77,7 +77,7 @@ func (s *Server) registerArtifactsTools() {
 	// mythic_get_artifacts_by_type - Get artifacts by type
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_get_artifacts_by_type",
-		Description: "Get artifacts filtered by artifact type",
+		Description: "Get artifacts filtered by base_artifact type (e.g. ProcessCreate, FileWrite, API). Uses case-insensitive partial matching.",
 	}, s.handleGetArtifactsByType)
 
 	// mythic_create_artifact - Create new artifact
@@ -92,10 +92,10 @@ func (s *Server) registerArtifactsTools() {
 		Description: "Update an existing artifact's properties",
 	}, s.handleUpdateArtifact)
 
-	// mythic_delete_artifact - Delete artifact
+	// mythic_delete_artifact - Delete artifact (not supported by Mythic API)
 	mcp.AddTool(s.mcpServer, &mcp.Tool{
 		Name:        "mythic_delete_artifact",
-		Description: "Delete an artifact from Mythic",
+		Description: "[UNSUPPORTED] Artifact deletion is not supported by the Mythic API. This tool will always return an error. Use mythic_update_artifact to modify artifacts instead.",
 	}, s.handleDeleteArtifact)
 }
 
@@ -117,7 +117,6 @@ type createCredentialArgs struct {
 	Realm      *string `json:"realm,omitempty" jsonschema:"Domain/realm"`
 	Credential string  `json:"credential" jsonschema:"The actual credential (password/hash/key)"`
 	Comment    *string `json:"comment,omitempty" jsonschema:"Additional notes about the credential"`
-	TaskID     *int    `json:"task_id,omitempty" jsonschema:"Task ID that discovered this credential"`
 }
 
 type updateCredentialArgs struct {
@@ -150,7 +149,7 @@ type getHostArtifactsArgs struct {
 }
 
 type getArtifactsByTypeArgs struct {
-	ArtifactType string `json:"artifact_type" jsonschema:"Artifact type to filter (File Write/Registry Write/etc.)"`
+	ArtifactType string `json:"artifact_type" jsonschema:"Artifact base_artifact type to filter by (e.g. ProcessCreate, FileWrite, API). Case-insensitive partial match."` 
 }
 
 type createArtifactArgs struct {
@@ -240,7 +239,6 @@ func (s *Server) handleCreateCredential(ctx context.Context, req *mcp.CallToolRe
 		Type:       args.Type,
 		Account:    args.Account,
 		Credential: args.Credential,
-		TaskID:     args.TaskID,
 	}
 
 	if args.Realm != nil {
