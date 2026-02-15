@@ -119,8 +119,7 @@ type c2HostFileArgs struct {
 }
 
 type c2SampleMessageArgs struct {
-	ProfileID   int    `json:"profile_id" jsonschema:"ID of the C2 profile"`
-	MessageType string `json:"message_type" jsonschema:"Type of message (e.g., checkin, get_tasking, post_response)"`
+	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile"`
 }
 
 type c2GetIOCArgs struct {
@@ -345,7 +344,13 @@ func (s *Server) handleC2HostFile(ctx context.Context, req *mcp.CallToolRequest,
 
 // handleC2SampleMessage retrieves a sample C2 message
 func (s *Server) handleC2SampleMessage(ctx context.Context, req *mcp.CallToolRequest, args c2SampleMessageArgs) (*mcp.CallToolResult, any, error) {
-	message, err := s.mythicClient.C2SampleMessage(ctx, args.ProfileID, args.MessageType)
+	// Resolve profile ID to profile name (Mythic API uses name as "uuid")
+	profile, err := s.mythicClient.GetC2ProfileByID(ctx, args.ProfileID)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	message, err := s.mythicClient.C2SampleMessage(ctx, profile.Name)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}
@@ -358,8 +363,8 @@ func (s *Server) handleC2SampleMessage(ctx context.Context, req *mcp.CallToolReq
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{
-				Text: fmt.Sprintf("Sample %s message for C2 profile %d:\n\n%s",
-					args.MessageType, args.ProfileID, string(data)),
+				Text: fmt.Sprintf("Sample message for C2 profile '%s' (ID: %d):\n\n%s",
+					profile.Name, args.ProfileID, string(data)),
 			},
 		},
 	}, message, nil
@@ -367,7 +372,13 @@ func (s *Server) handleC2SampleMessage(ctx context.Context, req *mcp.CallToolReq
 
 // handleC2GetIOC retrieves IOCs from a C2 profile
 func (s *Server) handleC2GetIOC(ctx context.Context, req *mcp.CallToolRequest, args c2GetIOCArgs) (*mcp.CallToolResult, any, error) {
-	ioc, err := s.mythicClient.C2GetIOC(ctx, args.ProfileID)
+	// Resolve profile ID to profile name (Mythic API uses name as "uuid")
+	profile, err := s.mythicClient.GetC2ProfileByID(ctx, args.ProfileID)
+	if err != nil {
+		return nil, nil, translateError(err)
+	}
+
+	ioc, err := s.mythicClient.C2GetIOC(ctx, profile.Name)
 	if err != nil {
 		return nil, nil, translateError(err)
 	}
@@ -380,7 +391,7 @@ func (s *Server) handleC2GetIOC(ctx context.Context, req *mcp.CallToolRequest, a
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
 			&mcp.TextContent{
-				Text: fmt.Sprintf("IOCs for C2 profile %d:\n\n%s", args.ProfileID, string(data)),
+				Text: fmt.Sprintf("IOCs for C2 profile '%s' (ID: %d):\n\n%s", profile.Name, args.ProfileID, string(data)),
 			},
 		},
 	}, ioc, nil
