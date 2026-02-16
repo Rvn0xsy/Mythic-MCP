@@ -15,13 +15,10 @@ func TestE2E_Tasks_IssueTask(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback to task
-	callbacks, err := setup.MythicClient.GetAllActiveCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No active callbacks available for testing")
+	callbacks, ok := requireActiveCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Issue a simple task (e.g., "whoami" or similar safe command)
@@ -47,13 +44,10 @@ func TestE2E_Tasks_GetTask(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get callbacks
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get tasks for this callback
@@ -61,7 +55,15 @@ func TestE2E_Tasks_GetTask(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for testing")
+		}
+		// Still exercise negative-path behavior.
+		_, err := setup.CallMCPTool("mythic_get_task", map[string]interface{}{
+			"task_id": 999999,
+		})
+		assert.Error(t, err)
+		return
 	}
 
 	taskID := tasks[0].DisplayID
@@ -79,13 +81,10 @@ func TestE2E_Tasks_GetCallbackTasks(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get tasks for callback
@@ -106,13 +105,10 @@ func TestE2E_Tasks_GetTasksByStatus(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get completed tasks
@@ -134,19 +130,23 @@ func TestE2E_Tasks_GetTaskOutput(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback with tasks
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 	tasks, err := setup.MythicClient.GetTasksForCallback(setup.Ctx, callbackID, 10)
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for testing")
+		}
+		_, err := setup.CallMCPTool("mythic_get_task_output", map[string]interface{}{
+			"task_id": 999999,
+		})
+		assert.Error(t, err)
+		return
 	}
 
 	taskID := tasks[0].DisplayID
@@ -164,19 +164,26 @@ func TestE2E_Tasks_UpdateTask(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a task to update
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 	tasks, err := setup.MythicClient.GetTasksForCallback(setup.Ctx, callbackID, 10)
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for testing")
+		}
+		_, err := setup.CallMCPTool("mythic_update_task", map[string]interface{}{
+			"task_id": 999999,
+			"updates": map[string]interface{}{
+				"comment": "Updated via E2E test",
+			},
+		})
+		assert.Error(t, err)
+		return
 	}
 
 	taskID := tasks[0].DisplayID
@@ -197,19 +204,23 @@ func TestE2E_Tasks_GetTaskArtifacts(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a task
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 	tasks, err := setup.MythicClient.GetTasksForCallback(setup.Ctx, callbackID, 10)
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for testing")
+		}
+		_, err := setup.CallMCPTool("mythic_get_task_artifacts", map[string]interface{}{
+			"task_id": 999999,
+		})
+		assert.Error(t, err)
+		return
 	}
 
 	taskID := tasks[0].DisplayID
@@ -231,19 +242,23 @@ func TestE2E_Responses_GetTaskResponses(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a task with responses
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 	tasks, err := setup.MythicClient.GetTasksForCallback(setup.Ctx, callbackID, 10)
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for testing")
+		}
+		_, err := setup.CallMCPTool("mythic_get_task_responses", map[string]interface{}{
+			"task_id": 999999,
+		})
+		assert.Error(t, err)
+		return
 	}
 
 	taskID := tasks[0].DisplayID
@@ -265,13 +280,10 @@ func TestE2E_Responses_GetCallbackResponses(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get callback responses
@@ -291,15 +303,10 @@ func TestE2E_Responses_GetCallbackResponses(t *testing.T) {
 func TestE2E_Responses_GetLatestResponses(t *testing.T) {
 	setup := SetupE2ETest(t)
 
-	// Get current operation
-	me, err := setup.MythicClient.GetMe(setup.Ctx)
-	require.NoError(t, err)
-
-	if me.CurrentOperation == nil {
-		t.Skip("No current operation set")
+	operationID, ok := requireCurrentOperationIDOrReturn(t, setup)
+	if !ok {
+		return
 	}
-
-	operationID := me.CurrentOperation.ID
 
 	// Get latest responses
 	result, err := setup.CallMCPTool("mythic_get_latest_responses", map[string]interface{}{
@@ -390,13 +397,10 @@ func TestE2E_Tasks_FullWorkflow(t *testing.T) {
 	// Workflow: Get callback → List tasks → Get task → Get output → Get responses
 
 	// 1. Get an active callback
-	callbacks, err := setup.MythicClient.GetAllActiveCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No active callbacks available for workflow test")
+	callbacks, ok := requireActiveCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callback := callbacks[0]
 	t.Logf("Using callback %d (%s@%s)", callback.DisplayID, callback.User, callback.Host)
 
@@ -413,7 +417,12 @@ func TestE2E_Tasks_FullWorkflow(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for workflow test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for workflow test")
+		}
+		_, err := setup.CallMCPTool("mythic_get_task", map[string]interface{}{"task_id": 999999})
+		assert.Error(t, err)
+		return
 	}
 
 	task := tasks[0]
@@ -463,19 +472,24 @@ func TestE2E_Tasks_WaitForTask(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a completed or processing task
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for testing")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 	tasks, err := setup.MythicClient.GetTasksForCallback(setup.Ctx, callbackID, 5)
 	require.NoError(t, err)
 
 	if len(tasks) == 0 {
-		t.Skip("No tasks available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No tasks available for testing")
+		}
+		_, err := setup.CallMCPTool("mythic_wait_for_task", map[string]interface{}{
+			"task_id": 999999,
+			"timeout": 1,
+		})
+		assert.Error(t, err)
+		return
 	}
 
 	taskID := tasks[0].DisplayID

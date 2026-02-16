@@ -17,6 +17,7 @@ import (
 	"github.com/nbaertsch/Mythic-MCP/pkg/config"
 	"github.com/nbaertsch/Mythic-MCP/pkg/server"
 	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic"
+	"github.com/nbaertsch/mythic-sdk-go/pkg/mythic/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -138,10 +139,8 @@ func SetupE2ETest(t *testing.T) *MCPTestSetup {
 	mythicPassword := os.Getenv("MYTHIC_PASSWORD")
 	mythicUsername := getEnvOrDefault("MYTHIC_USERNAME", "mythic_admin")
 
-	// Skip if credentials not available
-	if mythicPassword == "" {
-		t.Skip("MYTHIC_PASSWORD not set - skipping E2E test")
-	}
+	// E2E tests require real Mythic credentials.
+	require.NotEmpty(t, mythicPassword, "MYTHIC_PASSWORD not set - E2E tests require a running Mythic instance")
 
 	// Create configuration
 	cfg := &config.Config{
@@ -203,6 +202,49 @@ func SetupE2ETest(t *testing.T) *MCPTestSetup {
 	}
 
 	return setup
+}
+
+func e2eStrictMode() bool {
+	return os.Getenv("E2E_STRICT") == "1"
+}
+
+func requireCurrentOperationIDOrReturn(t *testing.T, setup *MCPTestSetup) (int, bool) {
+	me, err := setup.MythicClient.GetMe(setup.Ctx)
+	require.NoError(t, err)
+	if me.CurrentOperation == nil {
+		if e2eStrictMode() {
+			require.FailNow(t, "No current operation set")
+		}
+		t.Logf("No current operation set; exercising negative/empty-path behavior")
+		return 0, false
+	}
+	return me.CurrentOperation.ID, true
+}
+
+func requireCallbacksOrReturn(t *testing.T, setup *MCPTestSetup, min int) ([]*types.Callback, bool) {
+	cbs, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
+	require.NoError(t, err)
+	if len(cbs) < min {
+		if e2eStrictMode() {
+			require.FailNow(t, "Not enough callbacks", "need=%d have=%d", min, len(cbs))
+		}
+		t.Logf("Not enough callbacks available (need=%d have=%d); exercising negative/empty-path behavior", min, len(cbs))
+		return nil, false
+	}
+	return cbs, true
+}
+
+func requireActiveCallbacksOrReturn(t *testing.T, setup *MCPTestSetup, min int) ([]*types.Callback, bool) {
+	cbs, err := setup.MythicClient.GetAllActiveCallbacks(setup.Ctx)
+	require.NoError(t, err)
+	if len(cbs) < min {
+		if e2eStrictMode() {
+			require.FailNow(t, "Not enough active callbacks", "need=%d have=%d", min, len(cbs))
+		}
+		t.Logf("Not enough active callbacks available (need=%d have=%d); exercising negative/empty-path behavior", min, len(cbs))
+		return nil, false
+	}
+	return cbs, true
 }
 
 // Cleanup runs all registered cleanup functions

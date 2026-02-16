@@ -44,13 +44,11 @@ func TestE2E_Callbacks_GetCallback(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// First get all callbacks to find one to query
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		// No callbacks available; strict mode already failed.
+		return
 	}
-
 	callbackID := allCallbacks[0].DisplayID
 
 	// Get specific callback
@@ -66,13 +64,10 @@ func TestE2E_Callbacks_UpdateCallback(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback to update
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := allCallbacks[0].DisplayID
 
 	// Update callback description
@@ -94,13 +89,10 @@ func TestE2E_Callbacks_GetLoadedCommands(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := allCallbacks[0].DisplayID
 
 	// Get loaded commands
@@ -120,13 +112,10 @@ func TestE2E_Callbacks_ExportImportConfig(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	agentCallbackID := allCallbacks[0].AgentCallbackID
 
 	// Export callback config
@@ -153,13 +142,10 @@ func TestE2E_Callbacks_GetCallbackTokens(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := allCallbacks[0].DisplayID
 
 	// Get callback tokens
@@ -179,11 +165,9 @@ func TestE2E_Callbacks_GraphEdges(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get all callbacks
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) < 2 {
-		t.Skip("Need at least 2 callbacks for P2P graph testing")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 2)
+	if !ok {
+		return
 	}
 
 	sourceID := allCallbacks[0].DisplayID
@@ -258,13 +242,10 @@ func TestE2E_Callbacks_FullWorkflow(t *testing.T) {
 	require.NotNil(t, activeResult)
 
 	// Get a callback to work with
-	allCallbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(allCallbacks) == 0 {
-		t.Skip("No callbacks available for full workflow test")
+	allCallbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callback := allCallbacks[0]
 
 	// 3. Get specific callback

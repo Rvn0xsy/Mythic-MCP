@@ -36,7 +36,13 @@ func TestE2E_Payloads_GetPayload(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available to test")
+		}
+		t.Logf("No payloads available; exercising negative/empty-path behavior")
+		_, err := setup.CallMCPTool("mythic_get_payload", map[string]interface{}{"payload_uuid": "nonexistent"})
+		assert.Error(t, err)
+		return
 	}
 
 	payloadUUID := allPayloads[0].UUID
@@ -72,7 +78,11 @@ func TestE2E_Payloads_CreatePayload(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(payloadTypes) == 0 {
-		t.Skip("No payload types available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payload types available for testing")
+		}
+		t.Logf("No payload types available; cannot create payload")
+		return
 	}
 
 	// Get a callback to use as template (optional)
@@ -104,7 +114,11 @@ func TestE2E_Payloads_UpdatePayload(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available to test")
+		}
+		t.Logf("No payloads available; cannot test update")
+		return
 	}
 
 	payloadUUID := allPayloads[0].UUID
@@ -132,7 +146,11 @@ func TestE2E_Payloads_GetPayloadCommands(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available to test")
+		}
+		t.Logf("No payloads available; cannot test payload commands")
+		return
 	}
 
 	payloadID := allPayloads[0].ID
@@ -158,7 +176,11 @@ func TestE2E_Payloads_ExportPayloadConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available to test")
+		}
+		t.Logf("No payloads available; cannot export payload config")
+		return
 	}
 
 	payloadUUID := allPayloads[0].UUID
@@ -184,15 +206,10 @@ func TestE2E_Payloads_ExportPayloadConfig(t *testing.T) {
 func TestE2E_Payloads_GetPayloadOnHost(t *testing.T) {
 	setup := SetupE2ETest(t)
 
-	// Get current operation
-	me, err := setup.MythicClient.GetMe(setup.Ctx)
-	require.NoError(t, err)
-
-	if me.CurrentOperation == nil {
-		t.Skip("No current operation set")
+	operationID, ok := requireCurrentOperationIDOrReturn(t, setup)
+	if !ok {
+		return
 	}
-
-	operationID := me.CurrentOperation.ID
 
 	// Get payloads on host
 	result, err := setup.CallMCPTool("mythic_get_payload_on_host", map[string]interface{}{
@@ -224,7 +241,11 @@ func TestE2E_Payloads_DownloadPayload(t *testing.T) {
 	}
 
 	if builtPayloadUUID == "" {
-		t.Skip("No built payloads available for download test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No built payloads available for download test")
+		}
+		t.Logf("No built payloads available; cannot test download")
+		return
 	}
 
 	// Download payload
@@ -256,7 +277,11 @@ func TestE2E_Payloads_RebuildPayload(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available to test")
+		}
+		t.Logf("No payloads available; cannot test rebuild")
+		return
 	}
 
 	payloadUUID := allPayloads[0].UUID
@@ -285,7 +310,11 @@ func TestE2E_Payloads_WaitForPayload(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available to test")
+		}
+		t.Logf("No payloads available; cannot test wait for payload")
+		return
 	}
 
 	payloadUUID := allPayloads[0].UUID
@@ -316,7 +345,11 @@ func TestE2E_Payloads_DeletePayload(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(payloadTypes) == 0 {
-		t.Skip("No payload types available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payload types available for testing")
+		}
+		t.Logf("No payload types available; cannot exercise delete payload flow")
+		return
 	}
 
 	// Choose a payload type that supports the installed HTTP C2 profile if possible.
@@ -489,7 +522,11 @@ func TestE2E_Payloads_FullWorkflow(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allPayloads) == 0 {
-		t.Skip("No payloads available for full workflow test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No payloads available for full workflow test")
+		}
+		t.Logf("No payloads available; cannot run payload full workflow")
+		return
 	}
 
 	payload := allPayloads[0]

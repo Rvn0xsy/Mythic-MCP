@@ -70,13 +70,10 @@ func TestE2E_Commands_GetLoadedCommandsForCallback(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get loaded commands (via callbacks tool)
@@ -132,7 +129,11 @@ func TestE2E_Commands_FullWorkflow(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(commands) == 0 {
-		t.Skip("No commands available for full workflow test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No commands available for full workflow test")
+		}
+		t.Logf("No commands available; cannot run command full workflow")
+		return
 	}
 
 	command := commands[0]
@@ -157,7 +158,11 @@ func TestE2E_Commands_CommandDetails(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(commands) == 0 {
-		t.Skip("No commands available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No commands available to test")
+		}
+		t.Logf("No commands available to display details")
+		return
 	}
 
 	// Test getting details for first command

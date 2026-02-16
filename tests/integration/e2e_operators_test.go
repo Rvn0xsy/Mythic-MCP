@@ -186,7 +186,8 @@ func TestE2E_Operators_InviteLinks(t *testing.T) {
 		"name":     "Test E2E Invite",
 	})
 	if err != nil && strings.Contains(err.Error(), "Invite links disabled") {
-		t.Skip("Invite links are disabled in this Mythic deployment")
+		t.Logf("Invite links are disabled in this Mythic deployment")
+		return
 	}
 	require.NoError(t, err)
 	require.NotNil(t, createResult)

@@ -38,13 +38,10 @@ func TestE2E_Screenshots_GetScreenshots(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get screenshots for callback
@@ -65,13 +62,10 @@ func TestE2E_Screenshots_GetScreenshotByID(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	cb := callbacks[0]
 	screenshotID, _, hasScreenshot := getFirstScreenshotFromCallback(t, setup, cb.DisplayID)
 	if !hasScreenshot {
@@ -98,13 +92,10 @@ func TestE2E_Screenshots_GetScreenshotTimeline(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get screenshots from last 24 hours
@@ -129,13 +120,10 @@ func TestE2E_Screenshots_GetScreenshotThumbnail(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	cb := callbacks[0]
 	_, agentFileID, hasScreenshot := getFirstScreenshotFromCallback(t, setup, cb.DisplayID)
 	if !hasScreenshot {
@@ -161,13 +149,10 @@ func TestE2E_Screenshots_DownloadScreenshot(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	cb := callbacks[0]
 	_, agentFileID, hasScreenshot := getFirstScreenshotFromCallback(t, setup, cb.DisplayID)
 	if !hasScreenshot {
@@ -196,13 +181,10 @@ func TestE2E_Screenshots_DeleteScreenshot(t *testing.T) {
 	// This makes it safe to run in CI and satisfies the no-skips requirement.
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	cb := callbacks[0]
 	_, agentFileID, hasScreenshot := getFirstScreenshotFromCallback(t, setup, cb.DisplayID)
 	if !hasScreenshot {
@@ -215,7 +197,7 @@ func TestE2E_Screenshots_DeleteScreenshot(t *testing.T) {
 
 	// Avoid deleting real screenshots; only validate that the delete path works on invalid input.
 	// (Tracked for improvement in issue #42.)
-	_, err = setup.CallMCPTool("mythic_delete_screenshot", map[string]interface{}{
+	_, err := setup.CallMCPTool("mythic_delete_screenshot", map[string]interface{}{
 		"agent_file_id": "nonexistent-file-id",
 	})
 	assert.Error(t, err)
@@ -270,13 +252,10 @@ func TestE2E_Screenshots_FullWorkflow(t *testing.T) {
 	// Workflow: Get screenshots → Get specific → Get timeline → Download thumbnail
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for full workflow test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callback := callbacks[0]
 
 	// 1. Get all screenshots for callback
@@ -341,13 +320,10 @@ func TestE2E_Screenshots_ScreenshotDetails(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	cb := callbacks[0]
 	screenshotID, agentFileID, hasScreenshot := getFirstScreenshotFromCallback(t, setup, cb.DisplayID)
 	if !hasScreenshot {
@@ -356,7 +332,7 @@ func TestE2E_Screenshots_ScreenshotDetails(t *testing.T) {
 	}
 
 	// Log details via happy-path tool calls
-	_, err = setup.CallMCPTool("mythic_get_screenshot_by_id", map[string]interface{}{
+	_, err := setup.CallMCPTool("mythic_get_screenshot_by_id", map[string]interface{}{
 		"screenshot_id": screenshotID,
 	})
 	require.NoError(t, err)

@@ -5,6 +5,7 @@ package integration
 
 import (
 	"testing"
+	
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,15 +28,10 @@ func TestE2E_Keylogs_GetKeylogs(t *testing.T) {
 func TestE2E_Keylogs_GetKeylogsByOperation(t *testing.T) {
 	setup := SetupE2ETest(t)
 
-	// Get current operation
-	me, err := setup.MythicClient.GetMe(setup.Ctx)
-	require.NoError(t, err)
-
-	if me.CurrentOperation == nil {
-		t.Skip("No current operation set")
+	operationID, ok := requireCurrentOperationIDOrReturn(t, setup)
+	if !ok {
+		return
 	}
-
-	operationID := me.CurrentOperation.ID
 
 	// Get keylogs for operation
 	result, err := setup.CallMCPTool("mythic_get_keylogs_by_operation", map[string]interface{}{
@@ -54,13 +50,10 @@ func TestE2E_Keylogs_GetKeylogsByCallback(t *testing.T) {
 	setup := SetupE2ETest(t)
 
 	// Get a callback
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available to test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callbackID := callbacks[0].DisplayID
 
 	// Get keylogs for callback
@@ -108,14 +101,10 @@ func TestE2E_Keylogs_FullWorkflow(t *testing.T) {
 	require.NotNil(t, allKeylogsResult)
 
 	// 2. Get current operation
-	me, err := setup.MythicClient.GetMe(setup.Ctx)
-	require.NoError(t, err)
-
-	if me.CurrentOperation == nil {
-		t.Skip("No current operation set for full workflow test")
+	operationID, ok := requireCurrentOperationIDOrReturn(t, setup)
+	if !ok {
+		return
 	}
-
-	operationID := me.CurrentOperation.ID
 
 	// 3. Get keylogs by operation
 	operationKeylogsResult, err := setup.CallMCPTool("mythic_get_keylogs_by_operation", map[string]interface{}{
@@ -125,13 +114,10 @@ func TestE2E_Keylogs_FullWorkflow(t *testing.T) {
 	require.NotNil(t, operationKeylogsResult)
 
 	// Get a callback to work with
-	callbacks, err := setup.MythicClient.GetAllCallbacks(setup.Ctx)
-	require.NoError(t, err)
-
-	if len(callbacks) == 0 {
-		t.Skip("No callbacks available for full workflow test")
+	callbacks, ok := requireCallbacksOrReturn(t, setup, 1)
+	if !ok {
+		return
 	}
-
 	callback := callbacks[0]
 
 	// 4. Get keylogs by callback

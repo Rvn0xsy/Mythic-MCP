@@ -104,6 +104,14 @@ jobs:
           echo "✅ Poseidon Agent installed"
           echo "::endgroup::"
 
+      - name: Install Apollo Agent
+        run: |
+          echo "::group::Installing Apollo Agent"
+          cd /tmp/mythic
+          sudo ./mythic-cli install github https://github.com/MythicAgents/Apollo
+          echo "✅ Apollo Agent installed"
+          echo "::endgroup::"
+
       - name: Wait for Agent and C2 Containers
         run: |
           echo "::group::Waiting for agent and C2 containers to start"
@@ -128,10 +136,19 @@ jobs:
               poseidon_running=0
             fi
 
-            if [ "$http_running" -eq "1" ] && [ "$poseidon_running" -eq "1" ]; then
+            # Check if apollo container is running (container name is just "apollo")
+            apollo_status=$(sudo docker ps --filter "name=^apollo$" --format "{{.Status}}" 2>/dev/null || echo "")
+            if [[ "$apollo_status" =~ "Up" ]]; then
+              apollo_running=1
+            else
+              apollo_running=0
+            fi
+
+            if [ "$http_running" -eq "1" ] && [ "$poseidon_running" -eq "1" ] && [ "$apollo_running" -eq "1" ]; then
               echo "✅ All containers ready after $attempt seconds"
               echo "HTTP C2 Profile: Running"
               echo "Poseidon Agent: Running"
+              echo "Apollo Agent: Running"
               echo ""
               echo "All Mythic containers:"
               sudo docker ps --filter "name=mythic" --format "table {{.Names}}\t{{.Status}}"
@@ -139,10 +156,11 @@ jobs:
               echo "Agent and C2 containers:"
               sudo docker ps --filter "name=^http$" --format "table {{.Names}}\t{{.Status}}"
               sudo docker ps --filter "name=^poseidon$" --format "table {{.Names}}\t{{.Status}}"
+              sudo docker ps --filter "name=^apollo$" --format "table {{.Names}}\t{{.Status}}"
               break
             fi
 
-            echo "Waiting for containers... (HTTP: $http_running, Poseidon: $poseidon_running)"
+            echo "Waiting for containers... (HTTP: $http_running, Poseidon: $poseidon_running, Apollo: $apollo_running)"
             sleep 5
             attempt=$((attempt + 5))
           done
@@ -197,6 +215,19 @@ jobs:
           sudo docker ps --filter "name=mythic" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
           echo "::endgroup::"
 
+      - name: Seed Real Callbacks (Phase 3/4)
+        if: matrix.test-group == 'Phase 3: Agents & Callbacks' || matrix.test-group == 'Phase 4: Tasks & Responses'
+        id: seed-callbacks
+        env:
+          MYTHIC_URL: "https://127.0.0.1:7443"
+          MYTHIC_USERNAME: "mythic_admin"
+          MYTHIC_PASSWORD: ${{ steps.mythic-creds.outputs.password }}
+          MYTHIC_SKIP_TLS_VERIFY: "true"
+        run: |
+          echo "::group::Seeding real callbacks"
+          go run ./tools/e2e_seed_real_callback
+          echo "::endgroup::"
+
       - name: Run E2E Integration Tests - ${{ matrix.test-group }}
         env:
           MYTHIC_URL: "https://127.0.0.1:7443"
@@ -204,6 +235,7 @@ jobs:
           MYTHIC_PASSWORD: ${{ steps.mythic-creds.outputs.password }}
           MYTHIC_SKIP_TLS_VERIFY: "true"
           E2E_DEBUG: "1"
+          E2E_STRICT: "1"
         run: |
           echo "::group::Running ${{ matrix.test-group }}"
           echo "Test Pattern: ${{ matrix.test-pattern }}"
@@ -237,9 +269,11 @@ jobs:
           echo "   Skipped: $SKIPPED"
           echo ""
 
-          # CI-First Philosophy: Treat test skips as warnings, not failures
+          # No-skips policy: treat any skips as failures
           if [ $SKIPPED -gt 0 ]; then
-            echo "::warning::⚠️  $SKIPPED test(s) were skipped - investigate why tests cannot run"
+            echo "::error::❌ $SKIPPED test(s) were skipped (no-skips policy)"
+            echo "::endgroup::"
+            exit 1
           fi
 
           if [ $TEST_EXIT_CODE -ne 0 ]; then

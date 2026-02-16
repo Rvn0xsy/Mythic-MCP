@@ -34,7 +34,11 @@ func TestE2E_C2Profiles_GetC2Profile(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allProfiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot test get c2 profile")
+		return
 	}
 
 	profileID := allProfiles[0].ID
@@ -56,7 +60,11 @@ func TestE2E_C2Profiles_CreateC2Instance(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available for testing")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available for testing")
+		}
+		t.Logf("No C2 profiles available; cannot create instance")
+		return
 	}
 
 	// Try to create an instance (may fail if already running)
@@ -83,7 +91,11 @@ func TestE2E_C2Profiles_ImportC2Instance(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot import instance")
+		return
 	}
 
 	// Try to import (needs valid config JSON - will likely fail without it)
@@ -111,7 +123,11 @@ func TestE2E_C2Profiles_StartStopProfile(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot start/stop profile")
+		return
 	}
 
 	profileID := profiles[0].ID
@@ -173,7 +189,11 @@ func TestE2E_C2Profiles_GetProfileOutput(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot get profile output")
+		return
 	}
 
 	profileID := profiles[0].ID
@@ -197,7 +217,11 @@ func TestE2E_C2Profiles_C2HostFile(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot host file")
+		return
 	}
 
 	profileID := profiles[0].ID
@@ -207,7 +231,11 @@ func TestE2E_C2Profiles_C2HostFile(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(files) == 0 {
-		t.Skip("No files available to host")
+		if e2eStrictMode() {
+			require.FailNow(t, "No files available to host")
+		}
+		t.Logf("No files available to host; cannot test host-file")
+		return
 	}
 
 	fileUUID := files[0].AgentFileID
@@ -237,7 +265,11 @@ func TestE2E_C2Profiles_C2SampleMessage(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot get sample message")
+		return
 	}
 
 	profileID := profiles[0].ID
@@ -267,7 +299,11 @@ func TestE2E_C2Profiles_C2GetIOC(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(profiles) == 0 {
-		t.Skip("No C2 profiles available to test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available to test")
+		}
+		t.Logf("No C2 profiles available; cannot get IOCs")
+		return
 	}
 
 	profileID := profiles[0].ID
@@ -321,7 +357,11 @@ func TestE2E_C2Profiles_FullWorkflow(t *testing.T) {
 	require.NoError(t, err)
 
 	if len(allProfiles) == 0 {
-		t.Skip("No C2 profiles available for full workflow test")
+		if e2eStrictMode() {
+			require.FailNow(t, "No C2 profiles available for full workflow test")
+		}
+		t.Logf("No C2 profiles available; cannot run full workflow")
+		return
 	}
 
 	profile := allProfiles[0]
