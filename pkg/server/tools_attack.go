@@ -49,7 +49,7 @@ func (s *Server) registerAttackTools() {
 
 // Tool argument types for attack tools
 
-type getAttackTechniquesArgs struct{}
+type getAttackTechniquesArgs = noArgs
 
 type getAttackTechniqueByIDArgs struct {
 	AttackID int `json:"attack_id" jsonschema:"Internal ID of the MITRE ATT&CK technique"`

@@ -19,6 +19,13 @@ type Server struct {
 	fileStore    *filestore.FileStore
 }
 
+// noArgs is used for tools that do not require input parameters.
+// It intentionally exposes a single optional property so generated JSON Schema
+// includes a properties object required by strict MCP clients.
+type noArgs struct {
+	Unused *bool `json:"unused,omitempty" jsonschema:"No-op parameter; leave unset"`
+}
+
 // NewServer creates a new MCP server with Mythic integration
 func NewServer(cfg *config.Config) (*Server, error) {
 	if cfg == nil {

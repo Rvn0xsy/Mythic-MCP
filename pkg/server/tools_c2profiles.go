@@ -85,7 +85,7 @@ func (s *Server) registerC2ProfilesTools() {
 
 // Tool argument types for C2 profile tools
 
-type getC2ProfilesArgs struct{}
+type getC2ProfilesArgs = noArgs
 
 type getC2ProfileArgs struct {
 	ProfileID int `json:"profile_id" jsonschema:"ID of the C2 profile"`

@@ -92,13 +92,13 @@ func (s *Server) registerPayloadsTools() {
 
 // Tool argument types for payload tools
 
-type getPayloadsArgs struct{}
+type getPayloadsArgs = noArgs
 
 type getPayloadArgs struct {
 	PayloadUUID string `json:"payload_uuid" jsonschema:"UUID of the payload to retrieve"`
 }
 
-type getPayloadTypesArgs struct{}
+type getPayloadTypesArgs = noArgs
 
 type createPayloadArgs struct {
 	PayloadType     string                   `json:"payload_type" jsonschema:"Payload type name (agent type)"`

@@ -34,9 +34,9 @@ func (s *Server) registerCommandsTools() {
 
 // Tool argument types for command tools
 
-type getCommandsArgs struct{}
+type getCommandsArgs = noArgs
 
-type getCommandParametersArgs struct{}
+type getCommandParametersArgs = noArgs
 
 type getCommandWithParametersArgs struct {
 	PayloadTypeID int    `json:"payload_type_id" jsonschema:"ID of the payload type"`

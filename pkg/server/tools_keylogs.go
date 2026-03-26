@@ -31,7 +31,7 @@ func (s *Server) registerKeylogsTools() {
 
 // Tool argument types for keylog tools
 
-type getKeylogsArgs struct{}
+type getKeylogsArgs = noArgs
 
 type getKeylogsByOperationArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`

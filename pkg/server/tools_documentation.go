@@ -115,7 +115,7 @@ func (s *Server) registerDocumentationTools() {
 	}, s.handleGetDocumentation)
 }
 
-type listDocumentationArgs struct{}
+type listDocumentationArgs = noArgs
 
 type getDocumentationArgs struct {
 	Path string `json:"path" jsonschema:"Documentation path from the listing (e.g. agents/poseidon, c2-profiles/httpx/examples, agents/poseidon/commands/shell)"`

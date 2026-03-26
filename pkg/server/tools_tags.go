@@ -80,7 +80,7 @@ func (s *Server) registerTagsTools() {
 
 // Tool argument types for tags tools
 
-type getTagTypesArgs struct{}
+type getTagTypesArgs = noArgs
 
 type getTagTypesByOperationArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"Operation ID to filter tag types"`

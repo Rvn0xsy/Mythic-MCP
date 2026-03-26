@@ -80,7 +80,7 @@ func (s *Server) registerOperationsTools() {
 
 // Tool argument types for operations tools
 
-type getOperationsArgs struct{}
+type getOperationsArgs = noArgs
 
 type getOperationArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation to retrieve"`
@@ -108,7 +108,7 @@ type setCurrentOperationArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation to set as current"`
 }
 
-type getCurrentOperationArgs struct{}
+type getCurrentOperationArgs = noArgs
 
 type getOperationOperatorsArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
@@ -126,7 +126,7 @@ type getEventLogArgs struct {
 	Limit       int `json:"limit,omitempty" jsonschema:"Maximum number of log entries to return (default 100)"`
 }
 
-type getGlobalSettingsArgs struct{}
+type getGlobalSettingsArgs = noArgs
 
 type updateGlobalSettingsArgs struct {
 	Settings map[string]interface{} `json:"settings" jsonschema:"Settings to update (key-value pairs)"`

@@ -101,7 +101,7 @@ func (s *Server) registerArtifactsTools() {
 
 // Tool argument types for credentials tools
 
-type getCredentialsArgs struct{}
+type getCredentialsArgs = noArgs
 
 type getCredentialArgs struct {
 	CredentialID int `json:"credential_id" jsonschema:"ID of the credential to retrieve"`
@@ -134,7 +134,7 @@ type deleteCredentialArgs struct {
 
 // Tool argument types for artifacts tools
 
-type getArtifactsArgs struct{}
+type getArtifactsArgs = noArgs
 
 type getArtifactArgs struct {
 	ArtifactID int `json:"artifact_id" jsonschema:"ID of the artifact to retrieve"`

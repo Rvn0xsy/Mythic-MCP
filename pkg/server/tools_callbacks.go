@@ -87,9 +87,9 @@ func (s *Server) registerCallbacksTools() {
 
 // Tool argument types for callbacks tools
 
-type getAllCallbacksArgs struct{}
+type getAllCallbacksArgs = noArgs
 
-type getActiveCallbacksArgs struct{}
+type getActiveCallbacksArgs = noArgs
 
 type getCallbackArgs struct {
 	CallbackID int `json:"callback_id" jsonschema:"Callback display_id (the number shown in the Mythic UI, not the internal database id)"`

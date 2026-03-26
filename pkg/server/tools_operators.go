@@ -86,7 +86,7 @@ func (s *Server) registerOperatorsTools() {
 
 // Tool argument types for operators tools
 
-type getOperatorsArgs struct{}
+type getOperatorsArgs = noArgs
 
 type getOperatorArgs struct {
 	OperatorID int `json:"operator_id" jsonschema:"ID of the operator to retrieve"`
@@ -131,7 +131,7 @@ type updateOperatorSecretsArgs struct {
 	Secrets    map[string]interface{} `json:"secrets" jsonschema:"Secrets to update (key-value pairs)"`
 }
 
-type getInviteLinksArgs struct{}
+type getInviteLinksArgs = noArgs
 
 type createInviteLinkArgs struct {
 	OperationID   *int    `json:"operation_id,omitempty" jsonschema:"Operation to associate link with"`

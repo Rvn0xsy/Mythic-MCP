@@ -60,11 +60,11 @@ type loginArgs struct {
 	Password string `json:"password" jsonschema:"Mythic password"`
 }
 
-type logoutArgs struct{}
+type logoutArgs = noArgs
 
-type isAuthenticatedArgs struct{}
+type isAuthenticatedArgs = noArgs
 
-type getCurrentUserArgs struct{}
+type getCurrentUserArgs = noArgs
 
 type createAPITokenArgs struct {
 	TokenType *string `json:"token_type,omitempty" jsonschema:"Optional token type for compatibility. Currently only 'User' is supported and other values are ignored by Mythic's API token endpoint."`
@@ -74,7 +74,7 @@ type deleteAPITokenArgs struct {
 	TokenID int `json:"token_id" jsonschema:"ID of the token to delete"`
 }
 
-type refreshTokenArgs struct{}
+type refreshTokenArgs = noArgs
 
 // handleLogin authenticates with Mythic using username/password
 func (s *Server) handleLogin(ctx context.Context, req *mcp.CallToolRequest, args loginArgs) (*mcp.CallToolResult, any, error) {

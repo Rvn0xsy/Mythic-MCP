@@ -43,7 +43,7 @@ func (s *Server) registerProcessesTools() {
 
 // Tool argument types for process tools
 
-type getProcessesArgs struct{}
+type getProcessesArgs = noArgs
 
 type getProcessesByOperationArgs struct {
 	OperationID int `json:"operation_id" jsonschema:"ID of the operation"`
