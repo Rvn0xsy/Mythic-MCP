@@ -110,6 +110,21 @@ Environment variables override config.toml values.
 
 ### Docker
 
+**Pre-built image** (recommended):
+
+```bash
+docker run -d --name mythic-mcp \
+  -p 3333:3333 \
+  -e MYTHIC_URL=https://mythic.example.com:7443 \
+  -e MYTHIC_API_TOKEN=your-token \
+  -e MCP_TRANSPORT=http \
+  -e MCP_AUTH_TOKEN=your-secret \
+  -e MYTHIC_SKIP_TLS_VERIFY=true \
+  ghcr.io/rvn0xsy/mythic-mcp:latest
+```
+
+**Build from source:**
+
 ```bash
 docker build -t mythic-mcp:latest .
 docker run -d --name mythic-mcp --network mythic_default \

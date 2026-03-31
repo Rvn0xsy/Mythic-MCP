@@ -114,16 +114,13 @@ jobs:
     needs: [build-binaries, build-docker]
     permissions:
       contents: write
-      packages: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
+      - name: Download binary artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: false
 
       - name: Generate checksums
         run: |
