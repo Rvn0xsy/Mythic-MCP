@@ -12,7 +12,8 @@ RUN go mod download
 COPY . .
 
 # Build the MCP server binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o /out/mythic-mcp ./cmd/mythic-mcp
+ARG VERSION=dev
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.Version=${VERSION}" -o /out/mythic-mcp ./cmd/mythic-mcp
 
 
 FROM alpine:3.20
