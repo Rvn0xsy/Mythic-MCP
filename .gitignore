@@ -40,3 +40,5 @@ mythic-mcp
 # MkDocs build output
 _site/
 gen-schema-docs
+
+config.toml
