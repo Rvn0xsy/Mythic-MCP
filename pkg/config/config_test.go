@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadFromEnv(t *testing.T) {
+func TestLoad(t *testing.T) {
 	// Save original environment
 	origEnv := map[string]string{
 		"MYTHIC_URL":             os.Getenv("MYTHIC_URL"),
@@ -39,7 +39,7 @@ func TestLoadFromEnv(t *testing.T) {
 		os.Unsetenv("MYTHIC_USERNAME")
 		os.Unsetenv("MYTHIC_PASSWORD")
 
-		cfg, err := LoadFromEnv()
+		cfg, err := Load()
 		require.NoError(t, err)
 		assert.Equal(t, "https://mythic.example.com:7443", cfg.MythicURL)
 		assert.Equal(t, "test-token", cfg.APIToken)
@@ -57,7 +57,7 @@ func TestLoadFromEnv(t *testing.T) {
 		os.Setenv("MYTHIC_USERNAME", "admin")
 		os.Setenv("MYTHIC_PASSWORD", "password123")
 
-		cfg, err := LoadFromEnv()
+		cfg, err := Load()
 		require.NoError(t, err)
 		assert.Equal(t, "https://mythic.example.com:7443", cfg.MythicURL)
 		assert.Equal(t, "", cfg.APIToken)
@@ -69,7 +69,7 @@ func TestLoadFromEnv(t *testing.T) {
 		os.Unsetenv("MYTHIC_URL")
 		os.Setenv("MYTHIC_API_TOKEN", "test-token")
 
-		_, err := LoadFromEnv()
+		_, err := Load()
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "MYTHIC_URL is required")
 	})
@@ -80,7 +80,7 @@ func TestLoadFromEnv(t *testing.T) {
 		os.Unsetenv("MYTHIC_USERNAME")
 		os.Unsetenv("MYTHIC_PASSWORD")
 
-		cfg, err := LoadFromEnv()
+		cfg, err := Load()
 		require.NoError(t, err)
 		assert.Equal(t, "https://mythic.example.com:7443", cfg.MythicURL)
 		assert.Empty(t, cfg.APIToken)
@@ -96,7 +96,7 @@ func TestLoadFromEnv(t *testing.T) {
 		os.Setenv("LOG_LEVEL", "debug")
 		os.Setenv("TIMEOUT", "60s")
 
-		cfg, err := LoadFromEnv()
+		cfg, err := Load()
 		require.NoError(t, err)
 		assert.False(t, cfg.SSL)
 		assert.True(t, cfg.SkipTLSVerify)

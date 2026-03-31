@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/modelcontextprotocol/go-sdk/auth"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/nbaertsch/Mythic-MCP/pkg/config"
 	"github.com/nbaertsch/Mythic-MCP/pkg/server"
@@ -20,14 +23,23 @@ var (
 )
 
 func main() {
+	// Parse flags
+	configFile := flag.String("config", "", "Path to config.toml (overrides MCP_CONFIG_FILE and default)")
+	flag.Parse()
+
 	// Handle version command
 	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Printf("mythic-mcp version %s\n", Version)
 		os.Exit(0)
 	}
 
-	// Load configuration
-	cfg, err := config.LoadFromEnv()
+	// -config flag takes precedence
+	if *configFile != "" {
+		os.Setenv("MCP_CONFIG_FILE", *configFile)
+	}
+
+	// Load configuration (config.toml if present, then environment variables)
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
@@ -56,6 +68,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Authenticate with Mythic before accepting connections
+	if err := srv.Authenticate(ctx); err != nil {
+		log.Fatalf("Mythic authentication failed: %v", err)
+	}
+
 	// Handle shutdown signals
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
@@ -80,9 +97,6 @@ func main() {
 		}
 
 	case "http":
-		// Server starts unauthenticated; the user must call mythic_login
-		// via MCP to establish a Mythic session.
-
 		// Determine listen address
 		addr := os.Getenv("MCP_HTTP_ADDR")
 		if addr == "" {
@@ -94,10 +108,26 @@ func main() {
 		}
 
 		// Create Streamable HTTP handler (MCP 2025-03-26 spec)
-		mcpHandler := mcp.NewStreamableHTTPHandler(
+		var mcpHandler http.Handler = mcp.NewStreamableHTTPHandler(
 			func(r *http.Request) *mcp.Server { return srv.MCPServer() },
 			nil, // default StreamableHTTPOptions
 		)
+
+		// Add bearer token auth if MCP_AUTH_TOKEN is configured
+		if cfg.AuthToken != "" {
+			verifier := auth.TokenVerifier(func(ctx context.Context, token string, req *http.Request) (*auth.TokenInfo, error) {
+				if token != cfg.AuthToken {
+					return nil, auth.ErrInvalidToken
+				}
+				return &auth.TokenInfo{
+					UserID:    "mcp",
+					Scopes:    []string{"mcp"},
+					Expiration: time.Now().Add(24 * time.Hour),
+				}, nil
+			})
+			mcpHandler = auth.RequireBearerToken(verifier, nil)(mcpHandler)
+			log.Println("Bearer token auth enabled for /mcp endpoint")
+		}
 
 		mux := http.NewServeMux()
 		mux.Handle("/mcp", mcpHandler)
@@ -108,7 +138,7 @@ func main() {
 			log.Println("File vending enabled — download endpoint: /download/{file_id}?token=...")
 		}
 
-		// Health check endpoint
+		// Health check endpoint (no auth required)
 		mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`{"status":"ok"}`))
@@ -126,11 +156,21 @@ func main() {
 			httpServer.Close()
 		}()
 
-		log.Printf("Starting Mythic MCP Server (HTTP transport) on %s", addr)
-		log.Printf("  MCP endpoint:    http://%s/mcp", addr)
-		log.Printf("  Health check:    http://%s/healthz", addr)
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("HTTP server error: %v", err)
+		// TLS or plain HTTP
+		if cfg.TLSCertFile != "" && cfg.TLSKeyFile != "" {
+			log.Printf("Starting Mythic MCP Server (HTTPS) on %s", addr)
+			log.Printf("  MCP endpoint:    https://%s/mcp", addr)
+			log.Printf("  Health check:    https://%s/healthz", addr)
+			if err := httpServer.ListenAndServeTLS(cfg.TLSCertFile, cfg.TLSKeyFile); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("HTTPS server error: %v", err)
+			}
+		} else {
+			log.Printf("Starting Mythic MCP Server (HTTP) on %s", addr)
+			log.Printf("  MCP endpoint:    http://%s/mcp", addr)
+			log.Printf("  Health check:    http://%s/healthz", addr)
+			if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("HTTP server error: %v", err)
+			}
 		}
 
 	default:

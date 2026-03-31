@@ -58,17 +58,55 @@ Full schema for every tool: **[Tool Reference →](https://nbaertsch.github.io/M
 # Build
 go build -o mythic-mcp ./cmd/mythic-mcp
 
-# Run (stdio — Claude Desktop)
-MYTHIC_URL=https://mythic.lab:7443 \
-MYTHIC_API_TOKEN=your-token \
-  ./mythic-mcp
+# Run with config.toml (default ./config.toml)
+./mythic-mcp
 
-# Run (HTTP/SSE — Docker / remote)
+# Run with config flag
+./mythic-mcp --config /path/to/config.toml
+
+# Run with environment variables (HTTP transport — default)
 MCP_TRANSPORT=http MCP_HTTP_PORT=3333 \
 MYTHIC_URL=https://mythic.lab:7443 \
 MYTHIC_API_TOKEN=your-token \
   ./mythic-mcp
 ```
+
+### Configuration File
+
+Create `config.toml` in the current directory, then run:
+
+```bash
+./mythic-mcp --config config.toml
+```
+
+Config file path precedence: `--config` flag > `MCP_CONFIG_FILE` env > `./config.toml`
+
+```toml
+[mythic]
+url = "https://mythic.example.com:7443"
+api_token = "your-api-token"
+# username = "admin"
+# password = "secret"
+ssl = true
+skip_tls_verify = false
+
+[server]
+log_level = "info"
+timeout = "30s"
+tls_cert_file = "/path/to/cert.pem"
+tls_key_file = "/path/to/key.pem"
+auth_token = "your-mcp-bearer-token"
+
+[file_vending]
+enabled = true
+base_url = ""
+storage_path = "/tmp/mythic-files"
+token_expiry = "5m"
+max_size_mb = 100
+cleanup_interval = "60s"
+```
+
+Environment variables override config.toml values.
 
 ### Docker
 
@@ -107,14 +145,22 @@ See the full [Getting Started guide](https://nbaertsch.github.io/Mythic-MCP/gett
 
 ## Configuration
 
+All settings can be provided via environment variables or `config.toml`. Environment variables take precedence.
+
 | Variable | Required | Description |
 |----------|:--------:|-------------|
 | `MYTHIC_URL` | ✓ | Mythic server URL |
 | `MYTHIC_API_TOKEN` | ✓¹ | API token or JWT |
 | `MYTHIC_USERNAME` / `MYTHIC_PASSWORD` | ✓¹ | Alternative: credential-based auth |
-| `MYTHIC_SKIP_TLS_VERIFY` | | Skip TLS verification (default `false`) |
-| `MCP_TRANSPORT` | | `stdio` (default) or `http` |
+| `MYTHIC_SKIP_TLS_VERIFY` | | Skip TLS verification for Mythic (default `false`) |
+| `MCP_TRANSPORT` | | `http` (default) or `stdio` |
 | `MCP_HTTP_PORT` | | HTTP/SSE listen port (default `3333`) |
+| `MCP_HTTP_ADDR` | | HTTP listen address (default `0.0.0.0:3333`) |
+| `MCP_AUTH_TOKEN` | | Bearer token for securing the `/mcp` endpoint |
+| `MCP_TLS_CERT_FILE` | | Path to TLS certificate file (enables HTTPS) |
+| `MCP_TLS_KEY_FILE` | | Path to TLS private key file |
+| `MCP_CONFIG_FILE` | | Path to config.toml (default `./config.toml`) |
+| `MCP_TLS_KEY_FILE` | | Path to TLS private key file |
 | `MYTHIC_DOCS_URL` | | URL of Mythic documentation server (default: `http://mythic_documentation:8090`) |
 
 <sub>¹ One of API token or username/password is required.</sub>

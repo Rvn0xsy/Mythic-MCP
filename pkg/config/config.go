@@ -4,7 +4,39 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/pelletier/go-toml/v2"
 )
+
+// TomlConfig is the structure of config.toml
+type TomlConfig struct {
+	Mythic struct {
+		URL           string `toml:"url"`
+		APIToken      string `toml:"api_token"`
+		Username      string `toml:"username"`
+		Password      string `toml:"password"`
+		SSL           bool   `toml:"ssl"`
+		SkipTLSVerify bool   `toml:"skip_tls_verify"`
+		DocsURL       string `toml:"docs_url"`
+	} `toml:"mythic"`
+
+	Server struct {
+		LogLevel  string `toml:"log_level"`
+		Timeout   string `toml:"timeout"`
+		TLSCert   string `toml:"tls_cert_file"`
+		TLSKey    string `toml:"tls_key_file"`
+		AuthToken string `toml:"auth_token"`
+	} `toml:"server"`
+
+	FileVending struct {
+		Enabled        bool   `toml:"enabled"`
+		BaseURL        string `toml:"base_url"`
+		StoragePath    string `toml:"storage_path"`
+		TokenExpiry    string `toml:"token_expiry"`
+		MaxSizeMB      int    `toml:"max_size_mb"`
+		CleanupDefault string `toml:"cleanup_interval"`
+	} `toml:"file_vending"`
+}
 
 // Config holds the MCP server configuration
 type Config struct {
@@ -17,8 +49,11 @@ type Config struct {
 	SkipTLSVerify bool
 
 	// Server settings
-	LogLevel string
-	Timeout  time.Duration
+	LogLevel    string
+	Timeout     time.Duration
+	TLSCertFile string
+	TLSKeyFile  string
+	AuthToken   string
 
 	// File vending settings
 	FileVendingEnabled  bool
@@ -29,32 +64,155 @@ type Config struct {
 	FileCleanupInterval time.Duration
 }
 
-// LoadFromEnv loads configuration from environment variables
-func LoadFromEnv() (*Config, error) {
+// Load loads configuration from config.toml (if present) and environment variables.
+// Environment variables take precedence over config.toml values.
+func Load() (*Config, error) {
 	cfg := &Config{
-		MythicURL:     os.Getenv("MYTHIC_URL"),
-		APIToken:      os.Getenv("MYTHIC_API_TOKEN"),
-		Username:      os.Getenv("MYTHIC_USERNAME"),
-		Password:      os.Getenv("MYTHIC_PASSWORD"),
-		SSL:           getEnvBool("MYTHIC_SSL", true),
-		SkipTLSVerify: getEnvBool("MYTHIC_SKIP_TLS_VERIFY", false),
-		LogLevel:      getEnvString("LOG_LEVEL", "info"),
-		Timeout:       getEnvDuration("TIMEOUT", 30*time.Second),
-
-		// File vending defaults
-		FileVendingEnabled:  getEnvBool("FILE_VENDING_ENABLED", true),
-		FileVendingBaseURL:  getEnvString("FILE_VENDING_BASE_URL", ""), // auto-detected if empty
-		FileStoragePath:     getEnvString("FILE_STORAGE_PATH", "/tmp/mythic-files"),
-		FileTokenExpiry:     getEnvDuration("FILE_TOKEN_EXPIRY", 5*time.Minute),
-		FileMaxSizeMB:       getEnvInt("FILE_MAX_SIZE_MB", 100),
-		FileCleanupInterval: getEnvDuration("FILE_CLEANUP_INTERVAL", 60*time.Second),
+		// Defaults
+		LogLevel:            "info",
+		Timeout:             30 * time.Second,
+		FileVendingEnabled:   true,
+		FileStoragePath:      "/tmp/mythic-files",
+		FileTokenExpiry:      5 * time.Minute,
+		FileMaxSizeMB:        100,
+		FileCleanupInterval:  60 * time.Second,
+		SSL:                  true,
 	}
+
+	// Load from TOML if config file exists
+	configFile := os.Getenv("MCP_CONFIG_FILE")
+	if configFile == "" {
+		configFile = "config.toml"
+	}
+	if data, err := os.ReadFile(configFile); err == nil {
+		var tc TomlConfig
+		if err := toml.Unmarshal(data, &tc); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", configFile, err)
+		}
+		applyToml(cfg, &tc)
+	}
+
+	// Overlay environment variables (they take precedence)
+	applyEnv(cfg)
 
 	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
 
 	return cfg, nil
+}
+
+// applyToml copies TOML config values into cfg (only if non-zero)
+func applyToml(cfg *Config, tc *TomlConfig) {
+	if tc.Mythic.URL != "" {
+		cfg.MythicURL = tc.Mythic.URL
+	}
+	if tc.Mythic.APIToken != "" {
+		cfg.APIToken = tc.Mythic.APIToken
+	}
+	if tc.Mythic.Username != "" {
+		cfg.Username = tc.Mythic.Username
+	}
+	if tc.Mythic.Password != "" {
+		cfg.Password = tc.Mythic.Password
+	}
+	cfg.SSL = tc.Mythic.SSL
+	cfg.SkipTLSVerify = tc.Mythic.SkipTLSVerify
+	if tc.Mythic.DocsURL != "" {
+		// stored externally, not in Config struct
+	}
+
+	if tc.Server.LogLevel != "" {
+		cfg.LogLevel = tc.Server.LogLevel
+	}
+	if tc.Server.Timeout != "" {
+		cfg.Timeout, _ = time.ParseDuration(tc.Server.Timeout)
+	}
+	if tc.Server.TLSCert != "" {
+		cfg.TLSCertFile = tc.Server.TLSCert
+	}
+	if tc.Server.TLSKey != "" {
+		cfg.TLSKeyFile = tc.Server.TLSKey
+	}
+	if tc.Server.AuthToken != "" {
+		cfg.AuthToken = tc.Server.AuthToken
+	}
+
+	if tc.FileVending.Enabled {
+		cfg.FileVendingEnabled = tc.FileVending.Enabled
+	}
+	if tc.FileVending.BaseURL != "" {
+		cfg.FileVendingBaseURL = tc.FileVending.BaseURL
+	}
+	if tc.FileVending.StoragePath != "" {
+		cfg.FileStoragePath = tc.FileVending.StoragePath
+	}
+	if tc.FileVending.TokenExpiry != "" {
+		cfg.FileTokenExpiry, _ = time.ParseDuration(tc.FileVending.TokenExpiry)
+	}
+	if tc.FileVending.MaxSizeMB != 0 {
+		cfg.FileMaxSizeMB = tc.FileVending.MaxSizeMB
+	}
+	if tc.FileVending.CleanupDefault != "" {
+		cfg.FileCleanupInterval, _ = time.ParseDuration(tc.FileVending.CleanupDefault)
+	}
+}
+
+// applyEnv overlays environment variable values onto cfg
+func applyEnv(cfg *Config) {
+	if v := os.Getenv("MYTHIC_URL"); v != "" {
+		cfg.MythicURL = v
+	}
+	if v := os.Getenv("MYTHIC_API_TOKEN"); v != "" {
+		cfg.APIToken = v
+	}
+	if v := os.Getenv("MYTHIC_USERNAME"); v != "" {
+		cfg.Username = v
+	}
+	if v := os.Getenv("MYTHIC_PASSWORD"); v != "" {
+		cfg.Password = v
+	}
+	if v := os.Getenv("MYTHIC_SSL"); v != "" {
+		cfg.SSL = v == "true" || v == "1" || v == "yes"
+	}
+	if v := os.Getenv("MYTHIC_SKIP_TLS_VERIFY"); v != "" {
+		cfg.SkipTLSVerify = v == "true" || v == "1" || v == "yes"
+	}
+
+	if v := os.Getenv("LOG_LEVEL"); v != "" {
+		cfg.LogLevel = v
+	}
+	if v := os.Getenv("TIMEOUT"); v != "" {
+		cfg.Timeout, _ = time.ParseDuration(v)
+	}
+	if v := os.Getenv("MCP_TLS_CERT_FILE"); v != "" {
+		cfg.TLSCertFile = v
+	}
+	if v := os.Getenv("MCP_TLS_KEY_FILE"); v != "" {
+		cfg.TLSKeyFile = v
+	}
+	if v := os.Getenv("MCP_AUTH_TOKEN"); v != "" {
+		cfg.AuthToken = v
+	}
+
+	if v := os.Getenv("FILE_VENDING_ENABLED"); v != "" {
+		cfg.FileVendingEnabled = v == "true" || v == "1" || v == "yes"
+	}
+	if v := os.Getenv("FILE_VENDING_BASE_URL"); v != "" {
+		cfg.FileVendingBaseURL = v
+	}
+	if v := os.Getenv("FILE_STORAGE_PATH"); v != "" {
+		cfg.FileStoragePath = v
+	}
+	if v := os.Getenv("FILE_TOKEN_EXPIRY"); v != "" {
+		cfg.FileTokenExpiry, _ = time.ParseDuration(v)
+	}
+	if v := os.Getenv("FILE_MAX_SIZE_MB"); v != "" {
+		fmt.Sscanf(v, "%d", &cfg.FileMaxSizeMB)
+	}
+	if v := os.Getenv("FILE_CLEANUP_INTERVAL"); v != "" {
+		cfg.FileCleanupInterval, _ = time.ParseDuration(v)
+	}
 }
 
 // Validate checks that required configuration is present.
